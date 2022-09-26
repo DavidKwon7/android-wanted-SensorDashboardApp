@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/navigation_dashboard">
+
+    <fragment
+        android:id="@+id/navigation_dashboard"
+        android:name="com.preonboarding.sensordashboard.presentation.dashboard.DashboardFragment"
+        android:label="DashboardFragment"
+        tools:layout="@layout/fragment_dashboard">
+        <action
+            android:id="@+id/action_dashboard_to_measurement"
+            app:destination="@id/navigation_measurement" />
+        <action
+            android:id="@+id/action_dashboard_to_replay"
+            app:destination="@id/navigation_replay" />
+    </fragment>
+    <fragment
+        android:id="@+id/navigation_measurement"
+        android:name="com.preonboarding.sensordashboard.presentation.measurement.MeasurementFragment"
+        android:label="MeasurementFragment"
+        tools:layout="@layout/fragment_measurement" />
+    <fragment
+        android:id="@+id/navigation_replay"
+        android:name="com.preonboarding.sensordashboard.presentation.replay.ReplayFragment"
+        android:label="ReplayFragment"
+        tools:layout="@layout/fragment_replay" />
+</navigation>

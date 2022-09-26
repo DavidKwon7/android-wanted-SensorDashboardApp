@@ -7,9 +7,13 @@ buildscript {
     ext {
         hilt_version = "2.42"
         mockk_version = "1.12.4"
-        room_version = "2.2.6"
-        coroutine_version = "1.4.1"
+        room_version = "2.4.3"
+        coroutine_version = "1.6.4"
         timber_version = "5.0.1"
+        paging_version = "3.1.1"
+        nav_version = "2.5.2"
+        lifecycle_version = "2.5.1"
+        chart_version = "v3.1.0"
     }
 }
 

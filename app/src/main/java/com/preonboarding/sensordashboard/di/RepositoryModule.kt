@@ -14,5 +14,7 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun provideRepository(measurementRepositoryImpl: MeasurementRepositoryImpl): MeasurementRepository
+    abstract fun provideRepository(
+        measurementRepositoryImpl: MeasurementRepositoryImpl
+    ): MeasurementRepository
 }

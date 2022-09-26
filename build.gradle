@@ -3,6 +3,14 @@ buildscript {
     dependencies {
         classpath 'com.google.dagger:hilt-android-gradle-plugin:2.42'
     }
+
+    ext {
+        hilt_version = "2.42"
+        mockk_version = "1.12.4"
+        room_version = "2.2.6"
+        coroutine_version = "1.4.1"
+        timber_version = "5.0.1"
+    }
 }
 
 plugins {

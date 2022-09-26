@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">android-wanted-SensorDashboardApp</string>
+    <string name="dashboard">대시보드</string>
+    <string name="replay">다시보기</string>
+    <string name="measurement">측정하기</string>
 </resources>

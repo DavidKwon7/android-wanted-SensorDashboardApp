@@ -10,10 +10,28 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/abl_replay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/tb_replay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:contentInsetStartWithNavigation="0dp"
+                app:navigationIcon="@drawable/ic_back_24"
+                app:navigationIconTint="@color/white"
+                app:title="@string/replay"
+                app:titleCentered="true"
+                app:titleTextColor="@color/white" />
+        </com.google.android.material.appbar.AppBarLayout>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="다시보기"
+            android:text="@string/replay"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

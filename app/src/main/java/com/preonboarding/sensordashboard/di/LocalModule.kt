@@ -24,14 +24,28 @@ object LocalModule {
         .addLast(KotlinJsonAdapterFactory())
         .build()
 
+    @Provides
+    @Singleton
+    fun provideAccListTypeConverter(moshi: Moshi): AccListTypeConverter =
+        AccListTypeConverter(moshi)
 
     @Provides
     @Singleton
-    fun provideAppDatabase(@ApplicationContext context: Context, moshi: Moshi): AppDatabase {
+    fun provideGyroListTypeConverter(moshi: Moshi): GyroListTypeConverter =
+        GyroListTypeConverter(moshi)
+
+    @Provides
+    @Singleton
+    fun provideAppDatabase(
+        @ApplicationContext context: Context,
+        moshi: Moshi,
+        accListTypeConverter: AccListTypeConverter,
+        gyroListTypeConverter: GyroListTypeConverter
+        ): AppDatabase {
         return Room
             .databaseBuilder(context, AppDatabase::class.java, "database")
-            .addTypeConverter(AccListTypeConverter(moshi))
-            .addTypeConverter(GyroListTypeConverter(moshi))
+            .addTypeConverter(accListTypeConverter)
+            .addTypeConverter(gyroListTypeConverter)
             .fallbackToDestructiveMigration()
             .build()
     }

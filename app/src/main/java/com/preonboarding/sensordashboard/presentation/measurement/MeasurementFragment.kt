@@ -168,6 +168,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
                     y = (sensorEvent.values[1] * THOUS).toInt(),
                     z = (sensorEvent.values[2] * THOUS).toInt(),
                 )
+                viewModel.gyroList.value.add(gyroInfo)
                 Timber.tag(TAG).d("gyro : $gyroInfo")
             }
         }

@@ -1,5 +1,6 @@
 package com.preonboarding.sensordashboard.data.repository
 
+import androidx.annotation.WorkerThread
 import com.preonboarding.sensordashboard.data.dao.MeasurementDAO
 import com.preonboarding.sensordashboard.data.entity.MeasurementEntity
 import com.preonboarding.sensordashboard.domain.model.AccInfo

@@ -52,7 +52,7 @@
                 android:gravity="center"
                 android:textColor="@color/black"
                 android:text="@string/measure_acc_text"
-                android:paddingVertical="4dp"
+                android:paddingVertical="6dp"
                 android:onClick="@{() -> viewModel.changeMeasureTarget()}"
                 android:background="@{measureTarget == MeasureTarget.ACC ? @color/blue_200 : @color/white}"/>
             <TextView
@@ -63,7 +63,7 @@
                 android:gravity="center"
                 android:textColor="@color/black"
                 android:text="@string/measure_gyro_text"
-                android:paddingVertical="4dp"
+                android:paddingVertical="6dp"
                 android:onClick="@{() -> viewModel.changeMeasureTarget()}"
                 android:background="@{measureTarget == MeasureTarget.GYRO ? @color/blue_200 : @color/white}"/>
         </LinearLayout>

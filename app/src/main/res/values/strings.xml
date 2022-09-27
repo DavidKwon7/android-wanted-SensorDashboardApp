@@ -3,4 +3,11 @@
     <string name="dashboard">대시보드</string>
     <string name="replay">다시보기</string>
     <string name="measurement">측정하기</string>
+
+    <!-- 측정 -->
+    <string name="measure_acc_text">Acc</string>
+    <string name="measure_gyro_text">Gyro</string>
+    <string name="measure_start_btn_text">측정</string>
+    <string name="measure_pause_btn_text">정지</string>
+    <string name="measure_save_btn_text">저장</string>
 </resources>

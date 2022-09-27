@@ -4,6 +4,10 @@
 
     <data>
         <import type="com.preonboarding.sensordashboard.domain.model.MeasureTarget" />
+
+        <variable
+            name="fragment"
+            type="com.preonboarding.sensordashboard.presentation.measurement.MeasurementFragment"/>
         <variable
             name="measureTarget"
             type="com.preonboarding.sensordashboard.domain.model.MeasureTarget" />

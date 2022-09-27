@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.snackbar.Snackbar
 import com.preonboarding.sensordashboard.R
 import com.preonboarding.sensordashboard.databinding.FragmentMeasurementBinding
 import com.preonboarding.sensordashboard.domain.model.AccInfo
@@ -16,10 +17,14 @@ import com.preonboarding.sensordashboard.domain.model.GyroInfo
 import com.preonboarding.sensordashboard.domain.model.MeasureTarget
 import com.preonboarding.sensordashboard.presentation.common.base.BaseFragment
 import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil.navigateUp
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.channels.Channel
 import timber.log.Timber
 
+@AndroidEntryPoint
 class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fragment_measurement), SensorEventListener {
     private val viewModel: MeasurementViewModel by viewModels()
+    private val channel = Channel<Int>()
 
     private val sensorManager: SensorManager by lazy {
         requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -69,6 +74,10 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
             stopMeasurement()
         }
 
+        binding.btnMeasureSave.setOnClickListener {
+            saveMeasurement()
+        }
+
         // ACC 선택
         binding.tvMeasureAcc.setOnClickListener {
             changeMeasureTarget()
@@ -108,6 +117,21 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
         sensorManager.unregisterListener(this)
     }
 
+    private fun saveMeasurement() {
+        with(viewModel) {
+            if(accList.value.isEmpty() || gyroList.value.isEmpty()) {
+                Snackbar.make(
+                    requireActivity().findViewById(android.R.id.content),
+                    getString(R.string.measure_snack_bar_text),
+                    Snackbar.LENGTH_SHORT)
+                    .show()
+            }
+            else {
+                saveMeasurement()
+            }
+        }
+    }
+
     private fun changeMeasureTarget() {
 
         with(viewModel) {
@@ -134,6 +158,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
                     y = sensorEvent.values[1].toInt(),
                     z = sensorEvent.values[2].toInt(),
                 )
+                viewModel.accList.value.add(accInfo)
                 Timber.tag(TAG).d("acc : $accInfo")
             }
 

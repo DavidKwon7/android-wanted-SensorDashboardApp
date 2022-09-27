@@ -1,6 +1,5 @@
 package com.preonboarding.sensordashboard.presentation.measurement
 
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -8,7 +7,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
 import android.view.View
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.preonboarding.sensordashboard.R
@@ -71,10 +69,12 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
             stopMeasurement()
         }
 
+        // ACC 선택
         binding.tvMeasureAcc.setOnClickListener {
             changeMeasureTarget()
         }
 
+        // GYRO 선택
         binding.tvMeasureGyro.setOnClickListener {
             changeMeasureTarget()
         }
@@ -108,22 +108,21 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
         sensorManager.unregisterListener(this)
     }
 
-    fun changeMeasureTarget() {
+    private fun changeMeasureTarget() {
 
         with(viewModel) {
             when(curMeasureTarget.value) {
                 MeasureTarget.ACC -> {
-                    viewModel.setMeasureTarget(MeasureTarget.GYRO)
+                    setMeasureTarget(MeasureTarget.GYRO)
                 }
                 MeasureTarget.GYRO -> {
-                    viewModel.setMeasureTarget(MeasureTarget.ACC)
+                    setMeasureTarget(MeasureTarget.ACC)
 
                 }
             }
             Timber.tag(TAG).e("현재 측정 타겟 : ${curMeasureTarget.value}")
         }
         stopMeasurement()
-
     }
 
     override fun onSensorChanged(sensorEvent: SensorEvent?) {
@@ -158,5 +157,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     companion object {
         private const val TAG = "MeasurementFragment"
         private const val THOUS = 1000
+        private const val PERIOD = 100 // 10Hz -> 0.1초 주기로 받아옴
+        private const val MAX = 60000 // 60초
     }
 }

@@ -25,17 +25,23 @@ class MeasurementViewModel: ViewModel() {
     val gyroList: StateFlow<MutableList<GyroInfo>>
         get() = _gyroList
 
-    fun changeMeasureTarget() {
-        when(_curMeasureTarget.value) {
-            MeasureTarget.ACC -> {
-                _curMeasureTarget.value = MeasureTarget.GYRO
-            }
-            MeasureTarget.GYRO -> {
-                _curMeasureTarget.value = MeasureTarget.ACC
-            }
-        }
-        Timber.tag(TAG).e("현재 측정 타겟 : ${_curMeasureTarget.value}")
+    fun setMeasureTarget(measureTarget: MeasureTarget) {
+        _curMeasureTarget.value = measureTarget
     }
+
+//    fun changeMeasureTarget() {
+//
+//        when(_curMeasureTarget.value) {
+//            MeasureTarget.ACC -> {
+//                _curMeasureTarget.value = MeasureTarget.GYRO
+//            }
+//            MeasureTarget.GYRO -> {
+//                _curMeasureTarget.value = MeasureTarget.ACC
+//            }
+//        }
+//        Timber.tag(TAG).e("현재 측정 타겟 : ${_curMeasureTarget.value}")
+//
+//    }
 
     companion object {
         private const val TAG = "MeasurementViewModel"

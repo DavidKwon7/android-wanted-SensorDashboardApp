@@ -35,25 +35,8 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
         sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        sensorManager.registerListener(
-            this,
-            accSensor,
-            SensorManager.SENSOR_DELAY_NORMAL
-        )
-
-        sensorManager.registerListener(
-            this,
-            gyroSensor,
-            SensorManager.SENSOR_DELAY_NORMAL
-        )
-    }
-
     override fun onPause() {
         super.onPause()
-
         sensorManager.unregisterListener(this)
     }
 
@@ -79,26 +62,67 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
         binding.tbMeasurement.setNavigationOnClickListener {
             navigateUp()
         }
+
+        binding.btnMeasureStart.setOnClickListener {
+            startMeasurement()
+        }
+
+        binding.btnMeasurePause.setOnClickListener {
+            stopMeasurement()
+        }
+
+        binding.tvMeasureAcc.setOnClickListener {
+            changeMeasureTarget()
+        }
+
+        binding.tvMeasureGyro.setOnClickListener {
+            changeMeasureTarget()
+        }
     }
 
     private fun startMeasurement() {
-        when(viewModel.curMeasureTarget.value) {
+        Timber.tag(TAG).e("START")
 
+        when(viewModel.curMeasureTarget.value) {
                 MeasureTarget.ACC -> {
+                    sensorManager.registerListener(
+                        this,
+                        accSensor,
+                        SensorManager.SENSOR_DELAY_NORMAL
+                    )
 
                 }
 
                 MeasureTarget.GYRO -> {
-
+                    sensorManager.registerListener(
+                        this,
+                        gyroSensor,
+                        SensorManager.SENSOR_DELAY_NORMAL
+                    )
                 }
         }
     }
 
     private fun stopMeasurement() {
-
+        Timber.tag(TAG).e("STOP")
+        sensorManager.unregisterListener(this)
     }
 
-    private fun saveMeasurement() {
+    fun changeMeasureTarget() {
+
+        with(viewModel) {
+            when(curMeasureTarget.value) {
+                MeasureTarget.ACC -> {
+                    viewModel.setMeasureTarget(MeasureTarget.GYRO)
+                }
+                MeasureTarget.GYRO -> {
+                    viewModel.setMeasureTarget(MeasureTarget.ACC)
+
+                }
+            }
+            Timber.tag(TAG).e("현재 측정 타겟 : ${curMeasureTarget.value}")
+        }
+        stopMeasurement()
 
     }
 

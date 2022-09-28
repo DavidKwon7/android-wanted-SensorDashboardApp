@@ -19,7 +19,6 @@ import com.preonboarding.sensordashboard.domain.model.MeasureTarget
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import com.preonboarding.sensordashboard.presentation.MainActivity
 import com.preonboarding.sensordashboard.presentation.common.base.BaseFragment
 import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil.navigateUp
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,8 +27,6 @@ import timber.log.Timber
 @AndroidEntryPoint
 class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fragment_measurement), SensorEventListener {
     private val viewModel: MeasurementViewModel by viewModels()
-    private lateinit var mainActivity: MainActivity
-
 
     private val sensorManager: SensorManager by lazy {
         requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -50,7 +47,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        mainActivity = context as MainActivity
+
         initViews()
         bindingViewModel()
     }
@@ -187,7 +184,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
 
 
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
-
+        /** Not Use **/
     }
 
     companion object {
@@ -211,8 +208,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
             // chart.xml에 배치된 lineChart에 데이터 연결
             binding.measurementLineChart.data = data
 
-            mainActivity.runOnUiThread {
-                // 그래프 생성
+            requireActivity().runOnUiThread {
                 binding.measurementLineChart.animateXY(1, 1)
             }
 

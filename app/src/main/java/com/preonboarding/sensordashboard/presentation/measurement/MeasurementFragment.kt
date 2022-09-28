@@ -1,6 +1,7 @@
 package com.preonboarding.sensordashboard.presentation.measurement
 
 import android.content.Context
+import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -180,27 +181,47 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     }
 
     private fun updateChart() {
-        val entries = ArrayList<Entry>()
+        val entriesX = ArrayList<Entry>()
+        val entriesY = ArrayList<Entry>()
+        val entriesZ = ArrayList<Entry>()
 
         var i = 1F
         for (it in accInfoList) {
-            entries.add(Entry(i, it.x.toFloat()))
+            entriesX.add(Entry(i, it.x.toFloat()))
+            entriesY.add(Entry(i, it.y.toFloat()))
+            entriesZ.add(Entry(i, it.z.toFloat()))
             i++
         }
 
-        val dataSet = LineDataSet(entries, "Exchange rate")
+        val dataSetX = LineDataSet(entriesX, "X")
+        val dataSetY = LineDataSet(entriesY, "Y")
+        val dataSetZ = LineDataSet(entriesZ, "Z")
 
-        //dataSet.color = ColorTemplate.getHoloBlue()
-        dataSet.setDrawValues(false)
-        dataSet.setDrawFilled(true)
-        dataSet.lineWidth = 3f
-        dataSet.circleRadius = 6f
-        //dataSet.valueTextColor = Color.BLACK
-        dataSet.valueTextSize = 16f
+
+        dataSetX.color = Color.RED
+        dataSetX.setDrawCircles(false)
+        dataSetX.setDrawValues(false)
+
+        dataSetY.color = Color.GREEN
+        dataSetY.setDrawValues(false)
+        dataSetY.setDrawCircles(false)
+
+        dataSetZ.color = Color.BLUE
+        dataSetZ.setDrawValues(false)
+        dataSetZ.setDrawCircles(false)
+
+        val lineData = LineData()
+
+        lineData.addDataSet(dataSetX)
+        lineData.addDataSet(dataSetY)
+        lineData.addDataSet(dataSetZ)
+
 
         binding.measurementLineChart.apply {
-            data = LineData(dataSet)
-            animateXY(100, 100)
+            data = lineData
+
+            lineData.notifyDataChanged()
+            notifyDataSetChanged()
             invalidate()
         }
     }

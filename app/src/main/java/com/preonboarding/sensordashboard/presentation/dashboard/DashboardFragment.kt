@@ -16,11 +16,11 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
     }
 
     private fun initViews() = with(binding) {
-        tvMeasurement.setOnClickListener {
+        btnMeasurement.setOnClickListener {
             navigate(R.id.action_dashboard_to_measurement)
         }
 
-        tvReplay.setOnClickListener {
+        btnReplay.setOnClickListener {
             navigate(R.id.action_dashboard_to_replay)
         }
     }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import javax.inject.Inject
 
@@ -41,21 +42,29 @@ class MeasurementViewModel @Inject constructor(
         get() = _curSecond
 
     // 센서 타입 바뀌면 초기화
-    fun clearSensorList() {
+    fun clearMeasurementInfo() {
         _sensorList.value.clear()
+        _curSecond.value = 0.0
     }
 
     fun setMeasureTarget(measureTarget: MeasureTarget) {
         _curMeasureTarget.value = measureTarget
     }
 
+    fun plusCurSecond() {
+        _curSecond.value += 0.1
+        Timber.tag(TAG).e(_curSecond.value.toString())
+    }
+
     @SuppressLint("SimpleDateFormat")
     fun saveMeasurement() {
+        // date
         val currentTime: Long = System.currentTimeMillis()
         val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
         val date: String = sdf.format(currentTime)
 
         Timber.tag(TAG).d("[저장]\ntype : ${_curMeasureTarget.value.type}\nsensorList : ${_sensorList.value}\ndate: $date\ntime : ${_curSecond.value}")
+        Timber.tag(TAG).d("데이터 개수 : ${_sensorList.value.size}")
 
         viewModelScope.launch(dispatcher) {
             kotlin.runCatching {
@@ -63,7 +72,7 @@ class MeasurementViewModel @Inject constructor(
                     sensorList = _sensorList.value,
                     type = _curMeasureTarget.value.type,
                     date = date,
-                    time = _curSecond.value
+                    time = curSecond.value
                 )
             }
                 .onSuccess {

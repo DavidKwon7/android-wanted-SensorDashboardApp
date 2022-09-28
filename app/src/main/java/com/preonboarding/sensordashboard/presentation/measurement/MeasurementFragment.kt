@@ -28,6 +28,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     SensorEventListener {
     private val viewModel: MeasurementViewModel by viewModels()
 
+    // sensor
     private val sensorManager: SensorManager by lazy {
         requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
     }
@@ -40,6 +41,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
         sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
     }
 
+    // graph
     var sensorInfoList: ArrayList<SensorInfo> = arrayListOf()
 
     var gyroInfoList: ArrayList<SensorInfo> = arrayListOf()
@@ -124,22 +126,14 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
 
     private fun saveMeasurement() {
         with(viewModel) {
-            when(this.curMeasureTarget.value) {
-                MeasureTarget.ACC -> {
-                    if(accList.value.isEmpty())
-                }
-
-                MeasureTarget.GYRO -> {
-
-                }
-            }
-            if (accList.value.isEmpty() || gyroList.value.isEmpty()) {
+            if (sensorList.value.isEmpty()) {
                 Snackbar.make(
                     requireActivity().findViewById(android.R.id.content),
                     getString(R.string.measure_snack_bar_text),
                     Snackbar.LENGTH_SHORT)
                     .show()
-            } else {
+            }
+            else {
                 saveMeasurement()
             }
         }
@@ -148,13 +142,13 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     private fun changeMeasureTarget() {
         binding.measurementLineChart.clear()
         with(viewModel) {
+            clearSensorList() // 측정 타겟 바뀌면 센서 값 리스트 초기화
             when (curMeasureTarget.value) {
                 MeasureTarget.ACC -> {
                     setMeasureTarget(MeasureTarget.GYRO)
                 }
                 MeasureTarget.GYRO -> {
                     setMeasureTarget(MeasureTarget.ACC)
-
                 }
             }
             Timber.tag(TAG).e("현재 측정 타겟 : ${curMeasureTarget.value}")
@@ -171,7 +165,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
                     y = sensorEvent.values[1].toInt(),
                     z = sensorEvent.values[2].toInt(),
                 )
-                viewModel.accList.value.add(sensorInfo)
+                viewModel.sensorList.value.add(sensorInfo)
                 sensorInfoList.add(sensorInfo)
                 updateChart(true)
                 Timber.tag(TAG).d("acc : $sensorInfo")
@@ -183,7 +177,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
                     y = (sensorEvent.values[1] * THOUS).toInt(),
                     z = (sensorEvent.values[2] * THOUS).toInt(),
                 )
-                viewModel.gyroList.value.add(gyroInfo)
+                viewModel.sensorList.value.add(gyroInfo)
                 gyroInfoList.add(gyroInfo)
                 updateChart(false)
                 Timber.tag(TAG).d("gyro : $gyroInfo")

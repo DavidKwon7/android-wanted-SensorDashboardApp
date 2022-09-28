@@ -3,7 +3,7 @@ package com.preonboarding.sensordashboard.domain.model
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class AccInfo(
+data class SensorInfo(
     val x: Int = 0,
     val y: Int = 0,
     val z: Int = 0,

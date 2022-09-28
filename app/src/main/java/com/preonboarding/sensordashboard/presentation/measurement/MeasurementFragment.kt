@@ -43,6 +43,8 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
 
     var accInfoList: ArrayList<AccInfo> = arrayListOf()
 
+    var gyroInfoList: ArrayList<GyroInfo> = arrayListOf()
+
     override fun onPause() {
         super.onPause()
         sensorManager.unregisterListener(this)
@@ -136,7 +138,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     }
 
     private fun changeMeasureTarget() {
-
+        binding.measurementLineChart.clear()
         with(viewModel) {
             when (curMeasureTarget.value) {
                 MeasureTarget.ACC -> {
@@ -163,7 +165,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
                 )
                 viewModel.accList.value.add(accInfo)
                 accInfoList.add(accInfo)
-                updateChart()
+                updateChart(true)
                 Timber.tag(TAG).d("acc : $accInfo")
             }
 
@@ -174,24 +176,37 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
                     z = (sensorEvent.values[2] * THOUS).toInt(),
                 )
                 viewModel.gyroList.value.add(gyroInfo)
+                gyroInfoList.add(gyroInfo)
+                updateChart(false)
                 Timber.tag(TAG).d("gyro : $gyroInfo")
             }
         }
 
     }
 
-    private fun updateChart() {
+    private fun updateChart(find : Boolean) {
         val entriesX = ArrayList<Entry>()
         val entriesY = ArrayList<Entry>()
         val entriesZ = ArrayList<Entry>()
 
         var i = 1F
-        for (it in accInfoList) {
-            entriesX.add(Entry(i, it.x.toFloat()))
-            entriesY.add(Entry(i, it.y.toFloat()))
-            entriesZ.add(Entry(i, it.z.toFloat()))
-            i++
+        if(find) {
+            for (it in accInfoList) {
+                entriesX.add(Entry(i, it.x.toFloat()))
+                entriesY.add(Entry(i, it.y.toFloat()))
+                entriesZ.add(Entry(i, it.z.toFloat()))
+                i++
+            }
         }
+        else{
+            for (it in gyroInfoList) {
+                entriesX.add(Entry(i, it.x.toFloat()))
+                entriesY.add(Entry(i, it.y.toFloat()))
+                entriesZ.add(Entry(i, it.z.toFloat()))
+                i++
+            }
+        }
+
 
         val dataSetX = LineDataSet(entriesX, "X")
         val dataSetY = LineDataSet(entriesY, "Y")

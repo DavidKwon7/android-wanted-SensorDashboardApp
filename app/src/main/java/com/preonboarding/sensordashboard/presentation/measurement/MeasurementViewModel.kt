@@ -42,8 +42,9 @@ class MeasurementViewModel @Inject constructor(
         get() = _curSecond
 
     // 센서 타입 바뀌면 초기화
-    fun clearSensorList() {
+    fun clearMeasurementInfo() {
         _sensorList.value.clear()
+        _curSecond.value = 0.0
     }
 
     fun setMeasureTarget(measureTarget: MeasureTarget) {
@@ -62,8 +63,6 @@ class MeasurementViewModel @Inject constructor(
         val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
         val date: String = sdf.format(currentTime)
 
-        val time: Double = String.format("%.1f", _curSecond.value).toDouble()
-
         Timber.tag(TAG).d("[저장]\ntype : ${_curMeasureTarget.value.type}\nsensorList : ${_sensorList.value}\ndate: $date\ntime : ${_curSecond.value}")
         Timber.tag(TAG).d("데이터 개수 : ${_sensorList.value.size}")
 
@@ -73,7 +72,7 @@ class MeasurementViewModel @Inject constructor(
                     sensorList = _sensorList.value,
                     type = _curMeasureTarget.value.type,
                     date = date,
-                    time = time
+                    time = curSecond.value
                 )
             }
                 .onSuccess {

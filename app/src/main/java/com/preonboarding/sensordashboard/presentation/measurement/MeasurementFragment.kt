@@ -128,6 +128,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     private fun stopMeasurement() {
         Timber.tag(TAG).e("STOP")
         sensorManager.unregisterListener(this)
+        channel.close()
     }
 
     private fun saveMeasurement() {
@@ -146,13 +147,15 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     }
 
     private fun changeMeasureTarget() {
+        stopMeasurement() // 측정중지
+
         // 그래프 초기화
         binding.measurementLineChart.clear()
         sensorInfoList.clear()
 
         // 센서 값 초기화
         with(viewModel) {
-            clearSensorList() // 측정 타겟 바뀌면 센서 값 리스트 초기화
+            clearMeasurementInfo() // 측정 타겟 바뀌면 센서 값 리스트 & time 초기화
             when (curMeasureTarget.value) {
                 MeasureTarget.ACC -> {
                     setMeasureTarget(MeasureTarget.GYRO)
@@ -163,7 +166,6 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
             }
             Timber.tag(TAG).e("현재 측정 타겟 : ${curMeasureTarget.value}")
         }
-        stopMeasurement()
     }
 
     override fun onSensorChanged(sensorEvent: SensorEvent?) {
@@ -192,27 +194,31 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
         }
 
         lifecycleScope.launch {
-            delay(PERIOD)
-            channel.send(sensorInfo)
-            viewModel.plusCurSecond()
+            // 0.1초마다 send
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                delay(PERIOD)
+                channel.send(sensorInfo)
+                viewModel.plusCurSecond()
 
-            viewModel.curSecond.collect {
-                if(it >= MAX) {
-                    // 60초 지나면
-                    channel.close()
-                    this.cancel()
-                    stopMeasurement()
+                viewModel.curSecond.collect {
+                    if(it >= MAX) {
+                        // 60초 지나면 측정 중지
+                        stopMeasurement()
+                        this.cancel()
+                    }
                 }
             }
         }
 
         lifecycleScope.launch {
-
-            for(sensor in channel) {
-                viewModel.sensorList.value.add(sensor)
-                sensorInfoList.add(sensor)
-                updateChart()
-                Timber.tag(TAG).d("${viewModel.curMeasureTarget.value.type} : $sensorInfo")
+            // 0.1초마다 receive
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                for (sensor in channel) {
+                    viewModel.sensorList.value.add(sensor)
+                    sensorInfoList.add(sensor)
+                    updateChart()
+                    Timber.tag(TAG).d("${viewModel.curMeasureTarget.value.type} : $sensorInfo")
+                }
             }
         }
 

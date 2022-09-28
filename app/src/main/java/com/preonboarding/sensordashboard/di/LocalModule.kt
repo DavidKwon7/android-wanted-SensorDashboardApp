@@ -2,8 +2,7 @@ package com.preonboarding.sensordashboard.di
 
 import android.content.Context
 import androidx.room.Room
-import com.preonboarding.sensordashboard.data.converter.AccListTypeConverter
-import com.preonboarding.sensordashboard.data.converter.GyroListTypeConverter
+import com.preonboarding.sensordashboard.data.converter.SensorListTypeConverter
 import com.preonboarding.sensordashboard.data.database.AppDatabase
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -26,26 +25,19 @@ object LocalModule {
 
     @Provides
     @Singleton
-    fun provideAccListTypeConverter(moshi: Moshi): AccListTypeConverter =
-        AccListTypeConverter(moshi)
-
-    @Provides
-    @Singleton
-    fun provideGyroListTypeConverter(moshi: Moshi): GyroListTypeConverter =
-        GyroListTypeConverter(moshi)
+    fun provideSensorListTypeConverter(moshi: Moshi): SensorListTypeConverter =
+        SensorListTypeConverter(moshi)
 
     @Provides
     @Singleton
     fun provideAppDatabase(
         @ApplicationContext context: Context,
         moshi: Moshi,
-        accListTypeConverter: AccListTypeConverter,
-        gyroListTypeConverter: GyroListTypeConverter
+        sensorListTypeConverter: SensorListTypeConverter,
         ): AppDatabase {
         return Room
             .databaseBuilder(context, AppDatabase::class.java, "database")
-            .addTypeConverter(accListTypeConverter)
-            .addTypeConverter(gyroListTypeConverter)
+            .addTypeConverter(sensorListTypeConverter)
             .fallbackToDestructiveMigration()
             .build()
     }

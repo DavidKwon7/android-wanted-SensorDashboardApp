@@ -2,8 +2,7 @@ package com.preonboarding.sensordashboard.data.repository
 
 import com.preonboarding.sensordashboard.data.dao.MeasurementDAO
 import com.preonboarding.sensordashboard.data.entity.MeasurementEntity
-import com.preonboarding.sensordashboard.domain.model.AccInfo
-import com.preonboarding.sensordashboard.domain.model.GyroInfo
+import com.preonboarding.sensordashboard.domain.model.SensorInfo
 import com.preonboarding.sensordashboard.domain.repository.MeasurementRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -18,10 +17,11 @@ class MeasurementRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveMeasurement(
-        accList: List<AccInfo>?,
-        gyroList: List<GyroInfo>?,
-        date: String
+        sensorList: List<SensorInfo>?,
+        type: String,
+        date: String,
+        time: Double
     ) {
-        measurementDao.saveMeasurement(MeasurementEntity(accList = accList, gyroList = gyroList, date = date))
+        measurementDao.saveMeasurement(MeasurementEntity(sensorList = sensorList, type = type, date = date, time = time))
     }
 }

@@ -3,8 +3,7 @@ package com.preonboarding.sensordashboard.data.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.preonboarding.sensordashboard.data.converter.AccListTypeConverter
-import com.preonboarding.sensordashboard.data.converter.GyroListTypeConverter
+import com.preonboarding.sensordashboard.data.converter.SensorListTypeConverter
 import com.preonboarding.sensordashboard.data.dao.MeasurementDAO
 import com.preonboarding.sensordashboard.data.entity.MeasurementEntity
 
@@ -13,7 +12,7 @@ import com.preonboarding.sensordashboard.data.entity.MeasurementEntity
     version = 1,
     exportSchema = false
 )
-@TypeConverters(value = [AccListTypeConverter::class, GyroListTypeConverter::class])
+@TypeConverters(SensorListTypeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun measurementDao(): MeasurementDAO
 }

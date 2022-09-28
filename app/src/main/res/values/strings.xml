@@ -10,5 +10,5 @@
     <string name="measure_start_btn_text">측정</string>
     <string name="measure_pause_btn_text">정지</string>
     <string name="measure_save_btn_text">저장</string>
-    <string name="measure_snack_bar_text">빈 측정 값이 있습니다.</string>
+    <string name="measure_snack_bar_text">측정 값이 비었습니다.</string>
 </resources>

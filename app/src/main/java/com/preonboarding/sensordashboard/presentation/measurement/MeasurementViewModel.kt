@@ -4,8 +4,7 @@ import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.preonboarding.sensordashboard.di.IoDispatcher
-import com.preonboarding.sensordashboard.domain.model.AccInfo
-import com.preonboarding.sensordashboard.domain.model.GyroInfo
+import com.preonboarding.sensordashboard.domain.model.SensorInfo
 import com.preonboarding.sensordashboard.domain.model.MeasureTarget
 import com.preonboarding.sensordashboard.domain.repository.MeasurementRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,30 +22,28 @@ class MeasurementViewModel @Inject constructor(
     @IoDispatcher private val dispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
+    // Acc or Gyro 타입
     private val _curMeasureTarget: MutableStateFlow<MeasureTarget> =
         MutableStateFlow(MeasureTarget.ACC)
     val curMeasureTarget: StateFlow<MeasureTarget>
         get() = _curMeasureTarget
 
-    private val _accList: MutableStateFlow<MutableList<AccInfo>> =
+    // 센서 값 리스트
+    private val _sensorList: MutableStateFlow<MutableList<SensorInfo>> =
         MutableStateFlow(mutableListOf())
-    val accList: StateFlow<MutableList<AccInfo>>
-        get() = _accList
+    val sensorList: StateFlow<MutableList<SensorInfo>>
+        get() = _sensorList
 
-    private val _accSecond: MutableStateFlow<Int> =
-        MutableStateFlow(0)
-    val accSecond: StateFlow<Int>
-        get() = _accSecond
+    // 측정 시간 (초)
+    private val _curSecond: MutableStateFlow<Double> =
+        MutableStateFlow(0.0)
+    val curSecond: StateFlow<Double>
+        get() = _curSecond
 
-    private val _gyroList: MutableStateFlow<MutableList<GyroInfo>> =
-        MutableStateFlow(mutableListOf())
-    val gyroList: StateFlow<MutableList<GyroInfo>>
-        get() = _gyroList
-
-    private val _gyroSecond: MutableStateFlow<Int> =
-        MutableStateFlow(0)
-    val gyroSecond: StateFlow<Int>
-        get() = _gyroSecond
+    // 센서 타입 바뀌면 초기화
+    fun clearSensorList() {
+        _sensorList.value.clear()
+    }
 
     fun setMeasureTarget(measureTarget: MeasureTarget) {
         _curMeasureTarget.value = measureTarget
@@ -58,14 +55,15 @@ class MeasurementViewModel @Inject constructor(
         val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
         val date: String = sdf.format(currentTime)
 
-        Timber.tag(TAG).d("[저장]\nacc : ${_accList.value}\ngyro : ${_gyroList.value}\ndate: $date")
+        Timber.tag(TAG).d("[저장]\ntype : ${_curMeasureTarget.value.type}\nsensorList : ${_sensorList.value}\ndate: $date\ntime : ${_curSecond.value}")
 
         viewModelScope.launch(dispatcher) {
             kotlin.runCatching {
                 measurementRepository.saveMeasurement(
-                    accList = _accList.value,
-                    gyroList = _gyroList.value,
-                    date = date
+                    sensorList = _sensorList.value,
+                    type = _curMeasureTarget.value.type,
+                    date = date,
+                    time = _curSecond.value
                 )
             }
                 .onSuccess {

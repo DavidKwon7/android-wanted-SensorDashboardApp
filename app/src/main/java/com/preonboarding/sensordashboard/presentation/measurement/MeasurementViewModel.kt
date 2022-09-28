@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import javax.inject.Inject
 
@@ -49,13 +50,22 @@ class MeasurementViewModel @Inject constructor(
         _curMeasureTarget.value = measureTarget
     }
 
+    fun plusCurSecond() {
+        _curSecond.value += 0.1
+        Timber.tag(TAG).e(_curSecond.value.toString())
+    }
+
     @SuppressLint("SimpleDateFormat")
     fun saveMeasurement() {
+        // date
         val currentTime: Long = System.currentTimeMillis()
         val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
         val date: String = sdf.format(currentTime)
 
+        val time: Double = String.format("%.1f", _curSecond.value).toDouble()
+
         Timber.tag(TAG).d("[저장]\ntype : ${_curMeasureTarget.value.type}\nsensorList : ${_sensorList.value}\ndate: $date\ntime : ${_curSecond.value}")
+        Timber.tag(TAG).d("데이터 개수 : ${_sensorList.value.size}")
 
         viewModelScope.launch(dispatcher) {
             kotlin.runCatching {
@@ -63,7 +73,7 @@ class MeasurementViewModel @Inject constructor(
                     sensorList = _sensorList.value,
                     type = _curMeasureTarget.value.type,
                     date = date,
-                    time = _curSecond.value
+                    time = time
                 )
             }
                 .onSuccess {

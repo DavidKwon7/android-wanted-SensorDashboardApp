@@ -55,6 +55,11 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     override fun onPause() {
         super.onPause()
         sensorManager.unregisterListener(this)
+
+        // 측정을 중지하거나 60초가 넘는다고 채널이 중단 되는 것 아님
+        // 채널이 중단 되는 경우 -> 채널에 더 이상 아무런 데이터를 보내거나 받지 않을 경우
+        // 즉 화면 나갈 때
+        channel.close()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -128,7 +133,6 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     private fun stopMeasurement() {
         Timber.tag(TAG).e("STOP")
         sensorManager.unregisterListener(this)
-        channel.close()
     }
 
     private fun saveMeasurement() {
@@ -204,7 +208,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
                     if(it >= MAX) {
                         // 60초 지나면 측정 중지
                         stopMeasurement()
-                        this.cancel()
+                        this@launch.cancel()
                     }
                 }
             }

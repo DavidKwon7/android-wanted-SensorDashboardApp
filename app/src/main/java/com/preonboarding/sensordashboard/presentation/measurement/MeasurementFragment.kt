@@ -1,31 +1,32 @@
 package com.preonboarding.sensordashboard.presentation.measurement
 
 import android.content.Context
+import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
-import android.os.SystemClock
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
 import com.google.android.material.snackbar.Snackbar
 import com.preonboarding.sensordashboard.R
 import com.preonboarding.sensordashboard.databinding.FragmentMeasurementBinding
 import com.preonboarding.sensordashboard.domain.model.AccInfo
 import com.preonboarding.sensordashboard.domain.model.GyroInfo
 import com.preonboarding.sensordashboard.domain.model.MeasureTarget
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
 import com.preonboarding.sensordashboard.presentation.common.base.BaseFragment
 import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil.navigateUp
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
 @AndroidEntryPoint
-class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fragment_measurement), SensorEventListener {
+class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fragment_measurement),
+    SensorEventListener {
     private val viewModel: MeasurementViewModel by viewModels()
 
     private val sensorManager: SensorManager by lazy {
@@ -40,6 +41,10 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
         sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
     }
 
+    var accInfoList: ArrayList<AccInfo> = arrayListOf()
+
+    var gyroInfoList: ArrayList<GyroInfo> = arrayListOf()
+
     override fun onPause() {
         super.onPause()
         sensorManager.unregisterListener(this)
@@ -47,7 +52,6 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         initViews()
         bindingViewModel()
     }
@@ -90,32 +94,27 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
             changeMeasureTarget()
         }
 
-        binding.apply {
-            val thread = ThreadClass()
-            thread.start()
-        }
     }
 
     private fun startMeasurement() {
         Timber.tag(TAG).e("START")
+        when (viewModel.curMeasureTarget.value) {
+            MeasureTarget.ACC -> {
+                sensorManager.registerListener(
+                    this,
+                    accSensor,
+                    SensorManager.SENSOR_DELAY_NORMAL
+                )
 
-        when(viewModel.curMeasureTarget.value) {
-                MeasureTarget.ACC -> {
-                    sensorManager.registerListener(
-                        this,
-                        accSensor,
-                        SensorManager.SENSOR_DELAY_NORMAL
-                    )
+            }
 
-                }
-
-                MeasureTarget.GYRO -> {
-                    sensorManager.registerListener(
-                        this,
-                        gyroSensor,
-                        SensorManager.SENSOR_DELAY_NORMAL
-                    )
-                }
+            MeasureTarget.GYRO -> {
+                sensorManager.registerListener(
+                    this,
+                    gyroSensor,
+                    SensorManager.SENSOR_DELAY_NORMAL
+                )
+            }
         }
     }
 
@@ -126,23 +125,22 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
 
     private fun saveMeasurement() {
         with(viewModel) {
-            if(accList.value.isEmpty() || gyroList.value.isEmpty()) {
+            if (accList.value.isEmpty() || gyroList.value.isEmpty()) {
                 Snackbar.make(
                     requireActivity().findViewById(android.R.id.content),
                     getString(R.string.measure_snack_bar_text),
                     Snackbar.LENGTH_SHORT)
                     .show()
-            }
-            else {
+            } else {
                 saveMeasurement()
             }
         }
     }
 
     private fun changeMeasureTarget() {
-
+        binding.measurementLineChart.clear()
         with(viewModel) {
-            when(curMeasureTarget.value) {
+            when (curMeasureTarget.value) {
                 MeasureTarget.ACC -> {
                     setMeasureTarget(MeasureTarget.GYRO)
                 }
@@ -158,7 +156,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
 
     override fun onSensorChanged(sensorEvent: SensorEvent?) {
 
-        when(sensorEvent?.sensor?.type) {
+        when (sensorEvent?.sensor?.type) {
             Sensor.TYPE_ACCELEROMETER -> {
                 val accInfo = AccInfo(
                     x = sensorEvent.values[0].toInt(),
@@ -166,6 +164,8 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
                     z = sensorEvent.values[2].toInt(),
                 )
                 viewModel.accList.value.add(accInfo)
+                accInfoList.add(accInfo)
+                updateChart(true)
                 Timber.tag(TAG).d("acc : $accInfo")
             }
 
@@ -176,10 +176,69 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
                     z = (sensorEvent.values[2] * THOUS).toInt(),
                 )
                 viewModel.gyroList.value.add(gyroInfo)
+                gyroInfoList.add(gyroInfo)
+                updateChart(false)
                 Timber.tag(TAG).d("gyro : $gyroInfo")
             }
         }
 
+    }
+
+    private fun updateChart(find : Boolean) {
+        val entriesX = ArrayList<Entry>()
+        val entriesY = ArrayList<Entry>()
+        val entriesZ = ArrayList<Entry>()
+
+        var i = 1F
+        if(find) {
+            for (it in accInfoList) {
+                entriesX.add(Entry(i, it.x.toFloat()))
+                entriesY.add(Entry(i, it.y.toFloat()))
+                entriesZ.add(Entry(i, it.z.toFloat()))
+                i++
+            }
+        }
+        else{
+            for (it in gyroInfoList) {
+                entriesX.add(Entry(i, it.x.toFloat()))
+                entriesY.add(Entry(i, it.y.toFloat()))
+                entriesZ.add(Entry(i, it.z.toFloat()))
+                i++
+            }
+        }
+
+
+        val dataSetX = LineDataSet(entriesX, "X")
+        val dataSetY = LineDataSet(entriesY, "Y")
+        val dataSetZ = LineDataSet(entriesZ, "Z")
+
+
+        dataSetX.color = Color.RED
+        dataSetX.setDrawCircles(false)
+        dataSetX.setDrawValues(false)
+
+        dataSetY.color = Color.GREEN
+        dataSetY.setDrawValues(false)
+        dataSetY.setDrawCircles(false)
+
+        dataSetZ.color = Color.BLUE
+        dataSetZ.setDrawValues(false)
+        dataSetZ.setDrawCircles(false)
+
+        val lineData = LineData()
+
+        lineData.addDataSet(dataSetX)
+        lineData.addDataSet(dataSetY)
+        lineData.addDataSet(dataSetZ)
+
+
+        binding.measurementLineChart.apply {
+            data = lineData
+
+            lineData.notifyDataChanged()
+            notifyDataSetChanged()
+            invalidate()
+        }
     }
 
 
@@ -194,33 +253,4 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
         private const val MAX = 60000 // 60초
     }
 
-    inner class ThreadClass : Thread() {
-        override fun run() {
-            val input = Array<Double>(100,{Math.random()})
-            // Entry 배열 생성
-            var entries: ArrayList<Entry> = ArrayList()
-            // Entry 배열 초기값 입력
-            entries.add(Entry(0F , 0F))
-            // 그래프 구현을 위한 LineDataSet 생성
-            var dataset: LineDataSet = LineDataSet(entries, "input")
-            // 그래프 data 생성 -> 최종 입력 데이터
-            var data: LineData = LineData(dataset)
-            // chart.xml에 배치된 lineChart에 데이터 연결
-            binding.measurementLineChart.data = data
-
-            requireActivity().runOnUiThread {
-                binding.measurementLineChart.animateXY(1, 1)
-            }
-
-            for (i in 0 until input.size){
-
-                SystemClock.sleep(10)
-                data.addEntry(Entry(i.toFloat(), input[i].toFloat()), 0)
-                data.notifyDataChanged()
-                binding.measurementLineChart.notifyDataSetChanged()
-                binding.measurementLineChart.invalidate()
-            }
-
-        }
-    }
 }

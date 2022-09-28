@@ -23,6 +23,7 @@ import com.preonboarding.sensordashboard.domain.model.MeasureTarget
 import com.preonboarding.sensordashboard.presentation.common.base.BaseFragment
 import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil.navigateUp
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -196,15 +197,20 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
             viewModel.plusCurSecond()
 
             viewModel.curSecond.collect {
-                if(it >= MAX)
+                if(it >= MAX) {
+                    // 60초 지나면
                     channel.close()
+                    this.cancel()
+                    stopMeasurement()
+                }
             }
         }
 
         lifecycleScope.launch {
-            for(si in channel) {
-                viewModel.sensorList.value.add(si)
-                sensorInfoList.add(si)
+
+            for(sensor in channel) {
+                viewModel.sensorList.value.add(sensor)
+                sensorInfoList.add(sensor)
                 updateChart()
                 Timber.tag(TAG).d("${viewModel.curMeasureTarget.value.type} : $sensorInfo")
             }

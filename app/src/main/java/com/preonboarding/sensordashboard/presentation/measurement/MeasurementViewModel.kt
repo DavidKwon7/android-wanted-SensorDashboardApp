@@ -20,8 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MeasurementViewModel @Inject constructor(
     private val measurementRepository: MeasurementRepository,
-    @IoDispatcher private val dispatcher: CoroutineDispatcher
-): ViewModel() {
+    @IoDispatcher private val dispatcher: CoroutineDispatcher,
+) : ViewModel() {
 
     private val _curMeasureTarget: MutableStateFlow<MeasureTarget> =
         MutableStateFlow(MeasureTarget.ACC)

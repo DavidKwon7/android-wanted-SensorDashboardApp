@@ -63,6 +63,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     }
 
     private fun bindingViewModel() {
+        binding.fragment = this@MeasurementFragment
         binding.viewModel = viewModel
         binding.measureTarget = viewModel.curMeasureTarget.value
 
@@ -77,41 +78,9 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
         binding.tbMeasurement.setNavigationOnClickListener {
             navigateUp()
         }
-
-        binding.btnMeasureStart.setOnClickListener {
-            startMeasurement()
-        }
-
-        binding.btnMeasurePause.setOnClickListener {
-            stopMeasurement()
-        }
-
-        binding.btnMeasureSave.setOnClickListener {
-            if (viewModel.isMeasuring.value) {
-                Snackbar.make(
-                    requireActivity().findViewById(android.R.id.content),
-                    getString(R.string.measure_snack_bar_measuring_text),
-                    Snackbar.LENGTH_SHORT)
-                    .show()
-            }
-            else {
-                saveMeasurement()
-            }
-        }
-
-        // ACC 선택
-        binding.tvMeasureAcc.setOnClickListener {
-            changeMeasureTarget()
-        }
-
-        // GYRO 선택
-        binding.tvMeasureGyro.setOnClickListener {
-            changeMeasureTarget()
-        }
-
     }
 
-    private fun startMeasurement() {
+    fun startMeasurement() {
         if (viewModel.curSecond.value < MAX_SECOND) {
 
             viewModel.setIsMeasuring(true) // 측정 시작
@@ -143,28 +112,37 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
         }
     }
 
-    private fun stopMeasurement() {
+    fun stopMeasurement() {
         sensorManager.unregisterListener(this)
         viewModel.setIsMeasuring(false)
     }
 
-    private fun saveMeasurement() {
+    fun saveMeasurement() {
         with(viewModel) {
-            if (sensorList.value.isEmpty()) {
+            if (isMeasuring.value) {
                 Snackbar.make(
                     requireActivity().findViewById(android.R.id.content),
-                    getString(R.string.measure_snack_bar_empty_text),
+                    getString(R.string.measure_snack_bar_measuring_text),
                     Snackbar.LENGTH_SHORT)
                     .show()
             }
             else {
-                saveMeasurement()
-                checkUiState()
+                if (sensorList.value.isEmpty()) {
+                    Snackbar.make(
+                        requireActivity().findViewById(android.R.id.content),
+                        getString(R.string.measure_snack_bar_empty_text),
+                        Snackbar.LENGTH_SHORT)
+                        .show()
+                }
+                else {
+                    this.saveMeasurement()
+                    checkUiState()
+                }
             }
         }
     }
 
-    private fun changeMeasureTarget() {
+    fun changeMeasureTarget() {
         stopMeasurement() // 센서 측정 중지
 
         // 그래프 초기화

@@ -6,6 +6,10 @@
         <import type="com.preonboarding.sensordashboard.domain.model.MeasureTarget" />
 
         <variable
+            name="fragment"
+            type="com.preonboarding.sensordashboard.presentation.measurement.MeasurementFragment"/>
+
+        <variable
             name="measureTarget"
             type="com.preonboarding.sensordashboard.domain.model.MeasureTarget" />
 
@@ -55,6 +59,7 @@
                 android:textColor="@color/black"
                 android:text="@string/measure_acc_text"
                 android:paddingVertical="6dp"
+                android:onClick="@{() -> fragment.changeMeasureTarget()}"
                 android:background="@{measureTarget == MeasureTarget.ACC ? @color/blue_200 : @color/white}"/>
             <TextView
                 android:id="@+id/tv_measure_gyro"
@@ -65,6 +70,7 @@
                 android:textColor="@color/black"
                 android:text="@string/measure_gyro_text"
                 android:paddingVertical="6dp"
+                android:onClick="@{() -> fragment.changeMeasureTarget()}"
                 android:background="@{measureTarget == MeasureTarget.GYRO ? @color/blue_200 : @color/white}"/>
         </LinearLayout>
 
@@ -94,6 +100,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/measure_start_btn_text"
+            android:onClick="@{() -> fragment.startMeasurement()}"
             android:layout_marginTop="30dp"
             android:layout_marginStart="@dimen/margin_background_default"
             app:layout_constraintStart_toStartOf="parent"
@@ -103,6 +110,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/measure_pause_btn_text"
+            android:onClick="@{() -> fragment.stopMeasurement()}"
             android:layout_marginStart="@dimen/margin_background_default"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btn_measure_start"/>
@@ -111,6 +119,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/measure_save_btn_text"
+            android:onClick="@{() -> fragment.saveMeasurement()}"
             android:layout_marginStart="@dimen/margin_background_default"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btn_measure_pause"/>

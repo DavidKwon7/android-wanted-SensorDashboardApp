@@ -7,4 +7,8 @@ data class SensorInfo(
     val x: Int = 0,
     val y: Int = 0,
     val z: Int = 0,
-)
+) {
+    companion object {
+        fun emptyInfo() = SensorInfo(0, 0, 0)
+    }
+}

@@ -28,7 +28,7 @@ class SensorListTypeConverter @Inject constructor(
 
     // list -> string으로 DB에 보내기
     @TypeConverter
-    fun fromAccList(type: List<SensorInfo>): String {
+    fun fromSensorList(type: List<SensorInfo>): String {
         return adapter.toJson(type)
     }
 

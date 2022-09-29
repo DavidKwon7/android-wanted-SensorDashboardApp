@@ -1,11 +1,8 @@
 package com.preonboarding.sensordashboard.presentation.measurement
 
 import android.annotation.SuppressLint
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.material.snackbar.Snackbar
-import com.preonboarding.sensordashboard.R
 import com.preonboarding.sensordashboard.di.IoDispatcher
 import com.preonboarding.sensordashboard.domain.model.SensorInfo
 import com.preonboarding.sensordashboard.domain.model.MeasureTarget

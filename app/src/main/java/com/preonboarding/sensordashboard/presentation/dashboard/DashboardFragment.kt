@@ -3,6 +3,7 @@ package com.preonboarding.sensordashboard.presentation.dashboard
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.activityViewModels
+import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -23,8 +24,17 @@ import timber.log.Timber
 class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragment_dashboard) {
 
     private val viewModel: DashboardViewModel by viewModels()
+    private val pagingAdapter: DashboardPagingAdapter by lazy {
+        DashboardPagingAdapter(
+            optionClicked = {
+                showDialog()
+            },
+            itemClicked = {
+                navigate(R.id.action_dashboard_to_replay)
+            }
+        )
+    }
     private val replayViewModel: ReplayViewModel by activityViewModels()
-    private val pagingAdapter: DashboardPagingAdapter by lazy { DashboardPagingAdapter() }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -67,5 +77,9 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
                 }
             }
         }
+    }
+
+    private fun showDialog() {
+
     }
 }

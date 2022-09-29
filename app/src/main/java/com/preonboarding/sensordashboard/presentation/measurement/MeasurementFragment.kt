@@ -33,7 +33,6 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     SensorEventListener {
     private val viewModel: MeasurementViewModel by viewModels()
 
-    // private val channel = Channel<SensorInfo>()
 
     // sensor
     private val sensorManager: SensorManager by lazy {
@@ -54,11 +53,6 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     override fun onPause() {
         super.onPause()
         sensorManager.unregisterListener(this)
-
-        // 측정을 중지하거나 60초가 넘는다고 채널이 중단 되는 것 아님
-        // 채널이 중단 되는 경우 -> 채널에 더 이상 아무런 데이터를 보내거나 받지 않을 경우
-        // 즉 화면 나갈 때
-        // channel.close()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -250,36 +244,6 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
                     }
                 }
         }
-
-//        lifecycleScope.launch {
-//            // 0.1초마다 send
-//            repeatOnLifecycle(Lifecycle.State.RESUMED) {
-//                delay(PERIOD)
-//                channel.send(sensorInfo)
-//                viewModel.plusCurSecond()
-//
-//                viewModel.curSecond.collect {
-//                    if(it >= MAX) {
-//                        // 60초 지나면 측정 중지
-//                        stopMeasurement()
-//                        this@launch.cancel()
-//                    }
-//                }
-//            }
-//        }
-//
-//        lifecycleScope.launch {
-//            // 0.1초마다 receive
-//            repeatOnLifecycle(Lifecycle.State.RESUMED) {
-//                for (sensor in channel) {
-//                    viewModel.sensorList.value.add(sensor)
-//                    sensorInfoList.add(sensor)
-//                    updateChart()
-//                    Timber.tag(TAG).d("${viewModel.curMeasureTarget.value.type} : $sensorInfo")
-//                }
-//            }
-//        }
-
     }
 
     private fun clearChart() {

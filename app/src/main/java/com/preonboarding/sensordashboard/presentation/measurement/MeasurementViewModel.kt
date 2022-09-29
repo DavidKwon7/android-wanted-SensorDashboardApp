@@ -3,13 +3,11 @@ package com.preonboarding.sensordashboard.presentation.measurement
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
 import com.preonboarding.sensordashboard.di.IoDispatcher
-import com.preonboarding.sensordashboard.domain.model.MeasureResult
 import com.preonboarding.sensordashboard.domain.model.SensorInfo
 import com.preonboarding.sensordashboard.domain.model.MeasureTarget
-import com.preonboarding.sensordashboard.domain.repository.MeasurementRepository
+import com.preonboarding.sensordashboard.domain.usecase.SaveMeasurementUseCase
+import com.preonboarding.sensordashboard.presentation.common.state.MeasurementUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.*
@@ -20,7 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MeasurementViewModel @Inject constructor(
-    private val measurementRepository: MeasurementRepository,
+    private val saveMeasurementUseCase: SaveMeasurementUseCase,
     @IoDispatcher private val dispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
@@ -42,17 +40,16 @@ class MeasurementViewModel @Inject constructor(
     val curSecond: StateFlow<Double>
         get() = _curSecond
 
+    private val _uiState: MutableStateFlow<MeasurementUiState> =
+        MutableStateFlow(MeasurementUiState.Loading)
+    val uiState: StateFlow<MeasurementUiState>
+        get() = _uiState
+
     // 측정 or 정지중인지
     private val _isMeasuring: MutableStateFlow<Boolean> =
         MutableStateFlow(false)
     val isMeasuring: StateFlow<Boolean>
         get() = _isMeasuring
-
-    // 저장 잘 됐는지
-    private val _saveState: MutableStateFlow<Boolean> =
-        MutableStateFlow(true)
-    val saveState: StateFlow<Boolean>
-        get() = _saveState
 
     // 측정 중 값 업데이트
     fun updateMeasurement(sensorInfo: SensorInfo) {
@@ -90,7 +87,7 @@ class MeasurementViewModel @Inject constructor(
 
         viewModelScope.launch(dispatcher) {
             kotlin.runCatching {
-                measurementRepository.saveMeasurement(
+                saveMeasurementUseCase(
                     sensorList = _sensorList.value,
                     type = _curMeasureTarget.value.type,
                     date = date,
@@ -99,12 +96,12 @@ class MeasurementViewModel @Inject constructor(
             }
                 .onSuccess {
                     Timber.tag(TAG).e("저장 성공")
-                    _saveState.value = true
+                    _uiState.value = MeasurementUiState.SaveSuccess
                     clearMeasurementInfo()
                 }
                 .onFailure {
                     Timber.tag(TAG).e(it)
-                    _saveState.value = false
+                    _uiState.value = MeasurementUiState.SaveFail
                 }
         }
     }

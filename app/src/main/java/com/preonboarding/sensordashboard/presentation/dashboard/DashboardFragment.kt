@@ -11,6 +11,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.preonboarding.sensordashboard.R
 import com.preonboarding.sensordashboard.databinding.FragmentDashboardBinding
+import com.preonboarding.sensordashboard.presentation.common.OptionDialog
 import com.preonboarding.sensordashboard.domain.model.ViewType
 import com.preonboarding.sensordashboard.presentation.common.base.BaseFragment
 import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil.navigate
@@ -80,6 +81,16 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
     }
 
     private fun showDialog() {
+        val dialog = OptionDialog(
+            requireContext(),
+            playClicked = {
+                navigate(R.id.action_dashboard_to_replay)
+            },
+            deleteClicked = {
+                Toast.makeText(requireContext(), "Delete", Toast.LENGTH_SHORT).show()
+            }
+        )
 
+        dialog.showDialog()
     }
 }

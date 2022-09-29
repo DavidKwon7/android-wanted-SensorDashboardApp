@@ -15,5 +15,7 @@
     <string name="measure_snack_bar_measuring_text">아직 값을 측정중입니다.\n정지를 누르고 저장해주세요.</string>
     <string name="measure_snack_bar_save_text">저장되었습니다.</string>
     <string name="measure_snack_bar_not_save_text">저장에 실패했습니다.\n다시 시도해주세요.</string>
+    <string name="option">옵션</string>
+    <string name="play">재생하기</string>
 
 </resources>

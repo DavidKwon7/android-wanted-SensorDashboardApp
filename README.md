@@ -76,6 +76,118 @@
 ## 4. Feature & Screen
 
 ### 1. 대시보드
+* Room Local DB에 저장되어 있는 측정 데이터를 페이징하여 무한 스크롤되도록 구현
+
+#### Dao
+```kotlin
+@Dao
+interface MeasurementDAO {
+    @Query("SELECT * from MEASUREMENTS")
+    suspend fun getAllMeasurement(): List<MeasurementEntity>
+
+    ...
+}
+```
+
+#### PagingSource
+```kotlin
+class MeasurementPagingSource(
+    private val dao: MeasurementDAO
+) : PagingSource<Int, MeasureResult>() {
+    override fun getRefreshKey(state: PagingState<Int, MeasureResult>): Int? {
+        return state.anchorPosition?.let { anchorPosition ->
+            val anchorPage = state.closestPageToPosition(anchorPosition)
+            anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
+        }
+    }
+
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MeasureResult> {
+        val page = params.key ?: 0
+
+        return try {
+            val measureResult = dao.getAllMeasurement().mapToMeasureResult()
+
+            LoadResult.Page(
+                data = measureResult,
+                prevKey = if (page == 0) null else page - 1,
+                nextKey = if (measureResult.isEmpty()) null else page + 1
+            )
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            LoadResult.Error(e)
+        }
+    }
+}
+```
+
+#### RepositoryImpl
+```kotlin
+class MeasurementRepositoryImpl @Inject constructor(
+    private val measurementDao: MeasurementDAO
+) : MeasurementRepository {
+
+    // Dispatcher IO -> Dispatcher.Default
+    override suspend fun getAllMeasurement(): Flow<PagingData<MeasureResult>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 10,
+                enablePlaceholders = true,
+                initialLoadSize = 10
+            ),
+            pagingSourceFactory = { MeasurementPagingSource(measurementDao) }
+        ).flow.flowOn(Dispatchers.Default)
+    }
+
+		...
+
+}
+```
+
+#### ViewModel
+```kotlin
+@HiltViewModel
+class DashboardViewModel @Inject constructor(
+    private val measurementRepository: MeasurementRepository
+) : ViewModel() {
+
+    // 전체 측정 데이터
+    private val _measureData: MutableStateFlow<PagingData<MeasureResult>> =
+        MutableStateFlow<PagingData<MeasureResult>>(PagingData.empty())
+    val measureData: StateFlow<PagingData<MeasureResult>> = _measureData.asStateFlow()
+
+
+    fun getAllMeasurement() {
+        viewModelScope.launch {
+            measurementRepository.getAllMeasurement()
+                .cachedIn(viewModelScope)
+                .collectLatest { measureList ->
+                    _measureData.emit(measureList)
+                }
+        }
+    }
+}
+```
+
+#### Fragment#observeMeasureData
+```kotlin
+private fun observeMeasureData() {
+    viewLifecycleOwner.lifecycleScope.launch {
+        viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.measureData.collectLatest { measureList ->
+                pagingAdapter.submitData(measureList)
+            }
+        }
+    }
+}
+```
+
+#### 결과
+
+<img src="https://user-images.githubusercontent.com/51078673/193122897-43e936ec-a2f5-4e3e-92ea-e3eea05974be.gif" width=300>
+
+#### 남은 Task
+1. 측정 데이터 삭제
+2. 페이징 오류 수정
 
 ---
 

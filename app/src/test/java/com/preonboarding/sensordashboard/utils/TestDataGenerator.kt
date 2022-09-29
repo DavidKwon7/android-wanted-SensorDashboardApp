@@ -34,9 +34,6 @@ class TestDataGenerator {
             val item1 = MeasurementEntity(generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
             val item2 = MeasurementEntity(generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
             val item3 = MeasurementEntity(generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
-            /*val item1 = MeasureResult(0,"2022/09/29 04:49:36", 60.00003, generateSensorInfoList(), "Accelerometer")
-            val item2 = MeasureResult(0,"2022/09/29 04:49:36", 60.00003, generateSensorInfoList(),"Accelerometer")
-            val item3 = MeasureResult(0,"2022/09/29 04:49:36", 60.00003, generateSensorInfoList(),"Accelerometer")*/
             return listOf(item1, item2, item3)
         }
     }

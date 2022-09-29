@@ -25,8 +25,6 @@ import com.preonboarding.sensordashboard.presentation.common.state.MeasurementUi
 import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil.navigateUp
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 

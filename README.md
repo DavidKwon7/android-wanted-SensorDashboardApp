@@ -83,7 +83,8 @@
 
 | case | acc 측정 | gyro 60초 까지 측정 | acc 측정 중 gyro로 전환하여 측정 | 빈 측정 값 존재 |
 | --- | --- | --- | --- | --- |
-| 화면 |  |  |  |  |
+| 화면 | ![ezgif com-gif-maker](https://user-images.githubusercontent.com/85485290/193100784-b4b6cc3a-1948-4e2b-a06b-e5d56c9aed2c.gif) | ![ezgif com-gif-maker (1)](https://user-images.githubusercontent.com/85485290/193100811-dc012c7d-ed4b-4efd-be60-ff92623cc48b.gif) | ![ezgif com-gif-maker (2)](https://user-images.githubusercontent.com/85485290/193100800-93ebc9f0-e752-4551-ac36-92ff1fb9159f.gif) | <img width="250" src="https://user-images.githubusercontent.com/85485290/193100842-6aad57b0-da21-4d2d-8c1f-b476ab9f89d9.jpg" /> |
+
 
 #### 측정 값을 `Room`에 저장하는 방식
 - `MeasurementEntity`
@@ -559,4 +560,10 @@ coEvery{measurementDAO.getAllMeasurement()} throws error
 git clone https://github.com/DavidKwon7/android-wanted-SensorDashboardApp.git
 ```
 
-2. Run this project in Android Studio
+2. Type in your terminal
+
+```
+git checkout main
+```
+
+3. Run this project in Android Studio

@@ -63,4 +63,22 @@ class PagingSourceTest {
                 )
             )
         }
+
+    @Test
+    fun paging_source_load_failure_received_null_exception() =
+        mainCoroutineRule.runBlockingTest {
+            coEvery { measurementDAO.getAllMeasurement() } throws NullPointerException()
+
+            val expectedResult = PagingSource.LoadResult.Error<Int, ClipData.Item>(NullPointerException())
+
+            Assert.assertEquals(
+                expectedResult.toString(), measurementPagingSource.load(
+                    PagingSource.LoadParams.Refresh(
+                        key = 0,
+                        loadSize = 1,
+                        placeholdersEnabled = false
+                    )
+                ).toString()
+            )
+        }
 }

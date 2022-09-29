@@ -3,17 +3,18 @@ package com.preonboarding.sensordashboard
 import android.arch.core.executor.testing.InstantTaskExecutorRule
 import android.content.ClipData
 import androidx.paging.PagingSource
-import app.cash.turbine.Event
 import com.preonboarding.sensordashboard.data.dao.MeasurementDAO
 import com.preonboarding.sensordashboard.data.paging.MeasurementPagingSource
+import com.preonboarding.sensordashboard.domain.mapper.MeasurementMapper.mapToMeasureResult
 import com.preonboarding.sensordashboard.utils.MainCoroutineRule
+import com.preonboarding.sensordashboard.utils.TestDataGenerator
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
-import kotlinx.coroutines.test.runTest
 import okio.IOException
 import org.junit.Assert
 import org.junit.Before
@@ -43,6 +44,30 @@ class PagingSourceTest {
         MockKAnnotations.init(this, relaxUnitFun = true)
         measurementPagingSource = MeasurementPagingSource(measurementDAO)
     }
+
+    @Test
+    fun paging_source_load_success() =
+        mainCoroutineRule.runBlockingTest {
+            val data = TestDataGenerator.generateMeasureResultList()
+            coEvery { measurementDAO.getAllMeasurement() } returns data
+            measurementDAO.getAllMeasurement()
+            coVerify { measurementDAO.getAllMeasurement() }
+
+            val expectResult = PagingSource.LoadResult.Page(
+                data = data.mapToMeasureResult(),
+                prevKey = 0,
+                nextKey = 2
+            )
+            Assert.assertEquals(
+                expectResult, measurementPagingSource.load(
+                    PagingSource.LoadParams.Append(
+                        key = 1,
+                        loadSize = 10,
+                        placeholdersEnabled = false
+                    )
+                )
+            )
+        }
 
     @Test
     fun paging_source_load_failure_received_io_exception() =

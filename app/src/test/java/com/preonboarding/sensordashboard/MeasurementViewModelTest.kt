@@ -1,5 +1,6 @@
 package com.preonboarding.sensordashboard
 
+import android.arch.core.executor.testing.InstantTaskExecutorRule
 import app.cash.turbine.test
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
@@ -10,24 +11,31 @@ import com.preonboarding.sensordashboard.utils.MainCoroutineRule
 import com.preonboarding.sensordashboard.utils.TestDataGenerator
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
 import org.mockito.ArgumentMatchers.any
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 @ExperimentalCoroutinesApi
-//@SmallTest
+@RunWith(JUnit4::class)
 class MeasurementViewModelTest {
 
     @get:Rule
     val mainCoroutineRule = MainCoroutineRule()
+
+    @get:Rule
+    val instanceExecutorRule = InstantTaskExecutorRule()
 
     @MockK
     private lateinit var measurementRepository: MeasurementRepository
@@ -59,25 +67,33 @@ class MeasurementViewModelTest {
     }
 
     @Test
-    fun sensor_success() {
-        runBlocking {
-            measurementViewModel.sensorList.test {
+    fun sensor_fail() = runTest {
+        val data = TestDataGenerator.generateSensorInfo()
+        coEvery { measurementRepository.saveMeasurement(any(), any(), any(), any()) } throws Exception()
 
-                assertThat(expectItem()).isEqualTo(TestDataGenerator.generateSensorInfo())
-                expectComplete()
-            }
-        }
+        measurementViewModel.saveMeasurement()
+
+        coVerify { measurementRepository.saveMeasurement(any(), any(), any(), any()) }
+
     }
 
-    /*@Test
-    suspend fun cur_measure_target_success() {
-        measurementViewModel.curMeasureTarget.test {
-            coEvery { measurementViewModel.setMeasureTarget(any()) } returns Unit
-            //measurementViewModel.setMeasureTarget()
-            //Truth.assertThat(expectItem()).isEqualTo(1)
-            val data = expectItem()
-            Truth.assertThat(data).isEqualTo("GYRO")
+    // todo 수정 필요
+    @Test
+    fun sensor_success() = runTest {
+        val data = TestDataGenerator.generateSensorInfo()
+        coEvery { measurementRepository.saveMeasurement(any(), any(), any(), any()) } returns Unit
+
+        measurementViewModel.sensorList.test {
+            measurementRepository.saveMeasurement(
+                date = "data",
+                sensorList = listOf(data),
+                type = "ACC",
+                time = 13.00,
+            )
+            Truth.assertThat(expectItem()).isEqualTo(data)
         }
-        //measurementViewModel.setMeasureTarget(any())
-    }*/
+        coVerify { measurementRepository.saveMeasurement(any(), any(), any(), any()) }
+    }
 }
+
+

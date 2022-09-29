@@ -34,6 +34,13 @@ class MeasurementRepositoryImpl @Inject constructor(
         date: String,
         time: Double
     ) {
-        measurementDao.saveMeasurement(MeasurementEntity(sensorList = sensorList, type = type, date = date, time = time))
+        measurementDao.saveMeasurement(
+            MeasurementEntity(
+            sensorList = sensorList,
+            type = type,
+            date = date,
+            time = time
+            )
+        )
     }
 }

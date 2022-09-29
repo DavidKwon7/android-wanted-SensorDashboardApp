@@ -3,14 +3,16 @@ package com.preonboarding.sensordashboard.presentation.measurement
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.preonboarding.sensordashboard.di.IoDispatcher
+import com.preonboarding.sensordashboard.domain.model.MeasureResult
 import com.preonboarding.sensordashboard.domain.model.SensorInfo
 import com.preonboarding.sensordashboard.domain.model.MeasureTarget
 import com.preonboarding.sensordashboard.domain.repository.MeasurementRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.SimpleDateFormat
@@ -46,6 +48,7 @@ class MeasurementViewModel @Inject constructor(
     val isMeasuring: StateFlow<Boolean>
         get() = _isMeasuring
 
+    // 저장 잘 됐는지
     private val _saveState: MutableStateFlow<Boolean> =
         MutableStateFlow(true)
     val saveState: StateFlow<Boolean>
@@ -73,10 +76,6 @@ class MeasurementViewModel @Inject constructor(
         Timber.tag(TAG).e(_isMeasuring.value.toString())
     }
 
-    fun setSaveState(state: Boolean) {
-        _saveState.value = state
-    }
-
     @SuppressLint("SimpleDateFormat")
     fun saveMeasurement() {
         // date
@@ -100,12 +99,12 @@ class MeasurementViewModel @Inject constructor(
             }
                 .onSuccess {
                     Timber.tag(TAG).e("저장 성공")
-                    setSaveState(true)
+                    _saveState.value = true
                     clearMeasurementInfo()
                 }
                 .onFailure {
                     Timber.tag(TAG).e(it)
-                    setSaveState(false)
+                    _saveState.value = false
                 }
         }
     }

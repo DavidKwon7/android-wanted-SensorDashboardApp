@@ -10,5 +10,10 @@
     <string name="measure_start_btn_text">측정</string>
     <string name="measure_pause_btn_text">정지</string>
     <string name="measure_save_btn_text">저장</string>
-    <string name="measure_snack_bar_text">측정 값이 비었습니다.</string>
+    <string name="measure_snack_bar_empty_text">측정 값이 비었습니다.</string>
+    <string name="measure_snack_bar_second_text">최대 60초까지 측정 가능합니다.</string>
+    <string name="measure_snack_bar_measuring_text">아직 값을 측정중입니다.\n정지를 누르고 저장해주세요.</string>
+    <string name="measure_snack_bar_save_text">저장되었습니다.</string>
+    <string name="measure_snack_bar_not_save_text">저장에 실패했습니다.\n다시 시도해주세요.</string>
+
 </resources>

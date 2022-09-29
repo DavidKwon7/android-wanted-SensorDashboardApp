@@ -25,7 +25,6 @@ import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -93,7 +92,16 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
         }
 
         binding.btnMeasureSave.setOnClickListener {
-            saveMeasurement()
+            if (viewModel.isMeasuring.value) {
+                Snackbar.make(
+                    requireActivity().findViewById(android.R.id.content),
+                    getString(R.string.measure_snack_bar_measuring_text),
+                    Snackbar.LENGTH_SHORT)
+                    .show()
+            }
+            else {
+                saveMeasurement()
+            }
         }
 
         // ACC 선택
@@ -109,30 +117,40 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     }
 
     private fun startMeasurement() {
-        Timber.tag(TAG).e("START")
-        when (viewModel.curMeasureTarget.value) {
-            MeasureTarget.ACC -> {
-                sensorManager.registerListener(
-                    this,
-                    accSensor,
-                    SensorManager.SENSOR_DELAY_NORMAL
-                )
+        if (viewModel.curSecond.value < MAX_SECOND) {
 
-            }
+            viewModel.setIsMeasuring(true) // 측정 시작
 
-            MeasureTarget.GYRO -> {
-                sensorManager.registerListener(
-                    this,
-                    gyroSensor,
-                    SensorManager.SENSOR_DELAY_NORMAL
-                )
+            when (viewModel.curMeasureTarget.value) {
+                MeasureTarget.ACC -> {
+                    sensorManager.registerListener(
+                        this,
+                        accSensor,
+                        SENSOR_DELAY_CUSTOM
+                    )
+                }
+
+                MeasureTarget.GYRO -> {
+                    sensorManager.registerListener(
+                        this,
+                        gyroSensor,
+                        SENSOR_DELAY_CUSTOM
+                    )
+                }
             }
+        }
+        else {
+            Snackbar.make(
+                requireActivity().findViewById(android.R.id.content),
+                getString(R.string.measure_snack_bar_second_text),
+                Snackbar.LENGTH_SHORT)
+                .show()
         }
     }
 
     private fun stopMeasurement() {
-        Timber.tag(TAG).e("STOP")
         sensorManager.unregisterListener(this)
+        viewModel.setIsMeasuring(false)
     }
 
     private fun saveMeasurement() {
@@ -140,22 +158,48 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
             if (sensorList.value.isEmpty()) {
                 Snackbar.make(
                     requireActivity().findViewById(android.R.id.content),
-                    getString(R.string.measure_snack_bar_text),
+                    getString(R.string.measure_snack_bar_empty_text),
                     Snackbar.LENGTH_SHORT)
                     .show()
             }
             else {
                 saveMeasurement()
             }
+
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                    saveState.collect {
+                        when(it) {
+                            true -> {
+                                // 저장 성공
+                                clearChart()
+                                Snackbar.make(
+                                    requireActivity().findViewById(android.R.id.content),
+                                    getString(R.string.measure_snack_bar_save_text),
+                                    Snackbar.LENGTH_SHORT)
+                                    .show()
+                            }
+
+                            false -> {
+                                // 저장 실패
+                                Snackbar.make(
+                                    requireActivity().findViewById(android.R.id.content),
+                                    getString(R.string.measure_snack_bar_not_save_text),
+                                    Snackbar.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
     private fun changeMeasureTarget() {
-        stopMeasurement() // 측정중지
+        stopMeasurement() // 센서 측정 중지
 
         // 그래프 초기화
-        binding.measurementLineChart.clear()
-        sensorInfoList.clear()
+        clearChart()
 
         // 센서 값 초기화
         with(viewModel) {
@@ -197,35 +241,58 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
             }
         }
 
-        lifecycleScope.launch {
-            // 0.1초마다 send
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                delay(PERIOD)
-                channel.send(sensorInfo)
-                viewModel.plusCurSecond()
+        // update second & value
+        Timber.tag(TAG).d("${viewModel.curMeasureTarget.value.type} : $sensorInfo")
+        viewModel.updateMeasurement(sensorInfo)
 
+        // chart update
+        sensorInfoList.add(sensorInfo)
+        updateChart()
+
+        lifecycleScope.launch {
                 viewModel.curSecond.collect {
-                    if(it >= MAX) {
+                    if(it >= MAX_SECOND) {
                         // 60초 지나면 측정 중지
                         stopMeasurement()
                         this@launch.cancel()
                     }
                 }
-            }
         }
 
-        lifecycleScope.launch {
-            // 0.1초마다 receive
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                for (sensor in channel) {
-                    viewModel.sensorList.value.add(sensor)
-                    sensorInfoList.add(sensor)
-                    updateChart()
-                    Timber.tag(TAG).d("${viewModel.curMeasureTarget.value.type} : $sensorInfo")
-                }
-            }
-        }
+//        lifecycleScope.launch {
+//            // 0.1초마다 send
+//            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+//                delay(PERIOD)
+//                channel.send(sensorInfo)
+//                viewModel.plusCurSecond()
+//
+//                viewModel.curSecond.collect {
+//                    if(it >= MAX) {
+//                        // 60초 지나면 측정 중지
+//                        stopMeasurement()
+//                        this@launch.cancel()
+//                    }
+//                }
+//            }
+//        }
+//
+//        lifecycleScope.launch {
+//            // 0.1초마다 receive
+//            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+//                for (sensor in channel) {
+//                    viewModel.sensorList.value.add(sensor)
+//                    sensorInfoList.add(sensor)
+//                    updateChart()
+//                    Timber.tag(TAG).d("${viewModel.curMeasureTarget.value.type} : $sensorInfo")
+//                }
+//            }
+//        }
 
+    }
+
+    private fun clearChart() {
+        binding.measurementLineChart.clear()
+        sensorInfoList.clear()
     }
 
     private fun updateChart() {
@@ -281,8 +348,9 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     companion object {
         private const val TAG = "MeasurementFragment"
         private const val THOUS = 1000
-        private const val PERIOD = 100L // 10Hz -> 0.1초 주기로 받아옴
-        private const val MAX = 60.0 // 60초
+        private const val PERIOD = 100L // 10Hz -> 1초에 10번 -> 0.1초 주기로 받아옴
+        private const val SENSOR_DELAY_CUSTOM = 100000
+        private const val MAX_SECOND = 60.0 // 60초
     }
 
 }

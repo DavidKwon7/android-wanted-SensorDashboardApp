@@ -118,7 +118,7 @@ data class SensorInfo(
 
 ```kotlin
 private val listType = Types.newParameterizedType(List::class.java, SensorInfo::class.java)
-    private val adapter: JsonAdapter<List<SensorInfo>> = moshi.adapter(listType)
+private val adapter: JsonAdapter<List<SensorInfo>> = moshi.adapter(listType)
 
     // string -> list로 DB에서 가져오기
     @TypeConverter
@@ -132,7 +132,7 @@ private val listType = Types.newParameterizedType(List::class.java, SensorInfo::
 
     // list -> string으로 DB에 보내기
     @TypeConverter
-    fun fromAccList(type: List<SensorInfo>): String {
+    fun fromSensorList(type: List<SensorInfo>): String {
         return adapter.toJson(type)
     }
 ```
@@ -262,7 +262,7 @@ enum class MeasureTarget(val type: String) {
 차트 만들기
 
 ```kotlin
-				val entriesX = ArrayList<Entry>()
+	val entriesX = ArrayList<Entry>()
         val entriesY = ArrayList<Entry>()
         val entriesZ = ArrayList<Entry>()
 

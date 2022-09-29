@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface MeasurementDAO {
 
     @Query("SELECT * from MEASUREMENTS")
-    fun getAllMeasurement(): Flow<List<MeasurementEntity>>
+    suspend fun getAllMeasurement(): List<MeasurementEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun saveMeasurement(measurementEntity: MeasurementEntity)

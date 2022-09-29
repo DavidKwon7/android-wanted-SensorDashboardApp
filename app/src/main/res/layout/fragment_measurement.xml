@@ -6,11 +6,9 @@
         <import type="com.preonboarding.sensordashboard.domain.model.MeasureTarget" />
 
         <variable
-            name="fragment"
-            type="com.preonboarding.sensordashboard.presentation.measurement.MeasurementFragment"/>
-        <variable
             name="measureTarget"
             type="com.preonboarding.sensordashboard.domain.model.MeasureTarget" />
+
         <variable
             name="viewModel"
             type="com.preonboarding.sensordashboard.presentation.measurement.MeasurementViewModel" />
@@ -80,6 +78,17 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <TextView
+            android:id="@+id/tv_measure_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:text="@{String.valueOf(viewModel.curSecond)}"
+            android:layout_marginTop="30dp"
+            android:layout_marginStart="@dimen/margin_background_default"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/measurement_line_chart" />
+
         <Button
             android:id="@+id/btn_measure_start"
             android:layout_width="wrap_content"
@@ -88,7 +97,7 @@
             android:layout_marginTop="30dp"
             android:layout_marginStart="@dimen/margin_background_default"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/measurement_line_chart"/>
+            app:layout_constraintTop_toBottomOf="@id/tv_measure_time"/>
         <Button
             android:id="@+id/btn_measure_pause"
             android:layout_width="wrap_content"

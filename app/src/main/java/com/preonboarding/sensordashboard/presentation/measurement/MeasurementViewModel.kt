@@ -1,8 +1,11 @@
 package com.preonboarding.sensordashboard.presentation.measurement
 
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.material.snackbar.Snackbar
+import com.preonboarding.sensordashboard.R
 import com.preonboarding.sensordashboard.di.IoDispatcher
 import com.preonboarding.sensordashboard.domain.model.SensorInfo
 import com.preonboarding.sensordashboard.domain.model.MeasureTarget
@@ -13,7 +16,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import javax.inject.Inject
 
@@ -41,7 +43,25 @@ class MeasurementViewModel @Inject constructor(
     val curSecond: StateFlow<Double>
         get() = _curSecond
 
-    // 센서 타입 바뀌면 초기화
+    // 측정 or 정지중인지
+    private val _isMeasuring: MutableStateFlow<Boolean> =
+        MutableStateFlow(false)
+    val isMeasuring: StateFlow<Boolean>
+        get() = _isMeasuring
+
+    private val _saveState: MutableStateFlow<Boolean> =
+        MutableStateFlow(true)
+    val saveState: StateFlow<Boolean>
+        get() = _saveState
+
+    // 측정 중 값 업데이트
+    fun updateMeasurement(sensorInfo: SensorInfo) {
+        _curSecond.value += 0.1
+        _sensorList.value.add(sensorInfo)
+        Timber.tag(TAG).e(_curSecond.value.toString())
+    }
+
+    // 센서 타입 바뀌거나 저장하면 초기화
     fun clearMeasurementInfo() {
         _sensorList.value.clear()
         _curSecond.value = 0.0
@@ -51,9 +71,13 @@ class MeasurementViewModel @Inject constructor(
         _curMeasureTarget.value = measureTarget
     }
 
-    fun plusCurSecond() {
-        _curSecond.value += 0.1
-        Timber.tag(TAG).e(_curSecond.value.toString())
+    fun setIsMeasuring(state: Boolean) {
+        _isMeasuring.value = state
+        Timber.tag(TAG).e(_isMeasuring.value.toString())
+    }
+
+    fun setSaveState(state: Boolean) {
+        _saveState.value = state
     }
 
     @SuppressLint("SimpleDateFormat")
@@ -66,6 +90,8 @@ class MeasurementViewModel @Inject constructor(
         Timber.tag(TAG).d("[저장]\ntype : ${_curMeasureTarget.value.type}\nsensorList : ${_sensorList.value}\ndate: $date\ntime : ${_curSecond.value}")
         Timber.tag(TAG).d("데이터 개수 : ${_sensorList.value.size}")
 
+        setIsMeasuring(false)
+
         viewModelScope.launch(dispatcher) {
             kotlin.runCatching {
                 measurementRepository.saveMeasurement(
@@ -77,9 +103,12 @@ class MeasurementViewModel @Inject constructor(
             }
                 .onSuccess {
                     Timber.tag(TAG).e("저장 성공")
+                    setSaveState(true)
+                    clearMeasurementInfo()
                 }
                 .onFailure {
                     Timber.tag(TAG).e(it)
+                    setSaveState(false)
                 }
         }
     }

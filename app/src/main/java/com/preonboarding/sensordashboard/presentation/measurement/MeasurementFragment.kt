@@ -33,7 +33,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     SensorEventListener {
     private val viewModel: MeasurementViewModel by viewModels()
 
-    private val channel = Channel<SensorInfo>()
+    // private val channel = Channel<SensorInfo>()
 
     // sensor
     private val sensorManager: SensorManager by lazy {
@@ -58,7 +58,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
         // 측정을 중지하거나 60초가 넘는다고 채널이 중단 되는 것 아님
         // 채널이 중단 되는 경우 -> 채널에 더 이상 아무런 데이터를 보내거나 받지 않을 경우
         // 즉 화면 나갈 때
-        channel.close()
+        // channel.close()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -164,33 +164,34 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
             }
             else {
                 saveMeasurement()
-            }
 
-            lifecycleScope.launch {
-                repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                    saveState.collect {
-                        when(it) {
-                            true -> {
-                                // 저장 성공
-                                clearChart()
-                                Snackbar.make(
-                                    requireActivity().findViewById(android.R.id.content),
-                                    getString(R.string.measure_snack_bar_save_text),
-                                    Snackbar.LENGTH_SHORT)
-                                    .show()
-                            }
+                lifecycleScope.launch {
+                    repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                        saveState.collect {
+                            when(it) {
+                                true -> {
+                                    // 저장 성공
+                                    clearChart()
+                                    Snackbar.make(
+                                        requireActivity().findViewById(android.R.id.content),
+                                        getString(R.string.measure_snack_bar_save_text),
+                                        Snackbar.LENGTH_SHORT)
+                                        .show()
+                                }
 
-                            false -> {
-                                // 저장 실패
-                                Snackbar.make(
-                                    requireActivity().findViewById(android.R.id.content),
-                                    getString(R.string.measure_snack_bar_not_save_text),
-                                    Snackbar.LENGTH_SHORT)
-                                    .show()
+                                false -> {
+                                    // 저장 실패
+                                    Snackbar.make(
+                                        requireActivity().findViewById(android.R.id.content),
+                                        getString(R.string.measure_snack_bar_not_save_text),
+                                        Snackbar.LENGTH_SHORT)
+                                        .show()
+                                }
                             }
                         }
                     }
                 }
+
             }
         }
     }
@@ -219,7 +220,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
     override fun onSensorChanged(sensorEvent: SensorEvent?) {
 
         val sensorInfo = when (sensorEvent?.sensor?.type) {
-            Sensor.TYPE_ACCELEROMETER -> {
+            Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_GYROSCOPE  -> {
                 SensorInfo(
                     x = sensorEvent.values[0].toInt(),
                     y = sensorEvent.values[1].toInt(),
@@ -227,17 +228,8 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
                 )
             }
 
-            Sensor.TYPE_GYROSCOPE -> {
-                SensorInfo(
-                    x = (sensorEvent.values[0] * THOUS).toInt(),
-                    y = (sensorEvent.values[1] * THOUS).toInt(),
-                    z = (sensorEvent.values[2] * THOUS).toInt(),
-                )
-            }
             else -> {
-                SensorInfo(
-                    x = 0, y = 0, z = 0
-                )
+                SensorInfo.emptyInfo()
             }
         }
 
@@ -347,7 +339,6 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
 
     companion object {
         private const val TAG = "MeasurementFragment"
-        private const val THOUS = 1000
         private const val PERIOD = 100L // 10Hz -> 1초에 10번 -> 0.1초 주기로 받아옴
         private const val SENSOR_DELAY_CUSTOM = 100000
         private const val MAX_SECOND = 60.0 // 60초

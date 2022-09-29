@@ -56,7 +56,7 @@ class MeasurementViewModel @Inject constructor(
 
     // 측정 중 값 업데이트
     fun updateMeasurement(sensorInfo: SensorInfo) {
-        _curSecond.value += 0.1
+        _curSecond.value += SEC
         _sensorList.value.add(sensorInfo)
         Timber.tag(TAG).e(_curSecond.value.toString())
     }
@@ -111,5 +111,6 @@ class MeasurementViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "MeasurementViewModel"
+        private const val SEC = 0.1
     }
 }

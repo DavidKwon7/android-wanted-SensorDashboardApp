@@ -43,6 +43,23 @@ class MeasurementRepositoryImplTest {
 
         coVerify { measurementDAO.saveMeasurement(any()) }
 
+        // assertion
         Truth.assertThat(returned).isEqualTo(Unit)
+    }
+
+    @Test(expected = Exception::class)
+    fun test_save_measurement_fail() = runTest {
+
+        val saveItem = TestDataGenerator.generateList()
+
+        // Given
+        coEvery { measurementDAO.saveMeasurement(any()) } throws Exception()
+
+        // When
+        measurementRepository.saveMeasurement(saveItem,"a","a",1.1)
+
+        // Then
+        coVerify { measurementDAO.saveMeasurement(any()) }
+
     }
 }

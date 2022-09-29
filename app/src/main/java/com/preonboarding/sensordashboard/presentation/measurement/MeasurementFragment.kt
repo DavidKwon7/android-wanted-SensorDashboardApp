@@ -21,10 +21,12 @@ import com.preonboarding.sensordashboard.databinding.FragmentMeasurementBinding
 import com.preonboarding.sensordashboard.domain.model.SensorInfo
 import com.preonboarding.sensordashboard.domain.model.MeasureTarget
 import com.preonboarding.sensordashboard.presentation.common.base.BaseFragment
+import com.preonboarding.sensordashboard.presentation.common.state.MeasurementUiState
 import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil.navigateUp
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -32,7 +34,6 @@ import timber.log.Timber
 class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fragment_measurement),
     SensorEventListener {
     private val viewModel: MeasurementViewModel by viewModels()
-
 
     // sensor
     private val sensorManager: SensorManager by lazy {
@@ -158,34 +159,7 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
             }
             else {
                 saveMeasurement()
-
-                lifecycleScope.launch {
-                    repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                        saveState.collect {
-                            when(it) {
-                                true -> {
-                                    // 저장 성공
-                                    clearChart()
-                                    Snackbar.make(
-                                        requireActivity().findViewById(android.R.id.content),
-                                        getString(R.string.measure_snack_bar_save_text),
-                                        Snackbar.LENGTH_SHORT)
-                                        .show()
-                                }
-
-                                false -> {
-                                    // 저장 실패
-                                    Snackbar.make(
-                                        requireActivity().findViewById(android.R.id.content),
-                                        getString(R.string.measure_snack_bar_not_save_text),
-                                        Snackbar.LENGTH_SHORT)
-                                        .show()
-                                }
-                            }
-                        }
-                    }
-                }
-
+                checkUiState()
             }
         }
     }
@@ -296,6 +270,33 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
         }
     }
 
+    private fun checkUiState() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.uiState.collect {
+                    when(it) {
+                        is MeasurementUiState.Loading -> {}
+                        is MeasurementUiState.SaveSuccess -> {
+                            clearChart()
+                            Snackbar.make(
+                                requireActivity().findViewById(android.R.id.content),
+                                getString(R.string.measure_snack_bar_save_text),
+                                Snackbar.LENGTH_SHORT)
+                                .show()
+                        }
+
+                        is MeasurementUiState.SaveFail -> {
+                            Snackbar.make(
+                                requireActivity().findViewById(android.R.id.content),
+                                getString(R.string.measure_snack_bar_not_save_text),
+                                Snackbar.LENGTH_SHORT)
+                                .show()
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
         /** Not Use **/

@@ -43,6 +43,8 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
 
 
         initViews()
+        var viewType = args.viewType
+        viewModel.setReplayViewType(viewType)
 
 
 

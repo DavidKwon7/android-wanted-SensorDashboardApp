@@ -56,11 +56,11 @@ class MeasurementRepositoryImplTest {
     fun test_get_data_success() = runTest {
         val data = TestDataGenerator.generateMeasurementEntityList()
 
-        coEvery { measurementDAO.getAllMeasurement() } returns data
+        coEvery { measurementDAO.getAllMeasurement(any(), any()) } returns data
 
-        val expectData = measurementDAO.getAllMeasurement()
+        val expectData = measurementDAO.getAllMeasurement(1,1)
 
-        coVerify { measurementDAO.getAllMeasurement() }
+        coVerify { measurementDAO.getAllMeasurement(any(), any()) }
 
         Assert.assertEquals(data, expectData)
     }

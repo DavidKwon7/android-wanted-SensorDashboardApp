@@ -6,6 +6,7 @@ import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.preonboarding.sensordashboard.domain.model.MeasureTarget
 import com.preonboarding.sensordashboard.domain.repository.MeasurementRepository
+import com.preonboarding.sensordashboard.domain.usecase.SaveMeasurementUseCase
 import com.preonboarding.sensordashboard.presentation.measurement.MeasurementViewModel
 import com.preonboarding.sensordashboard.utils.MainCoroutineRule
 import com.preonboarding.sensordashboard.utils.TestDataGenerator
@@ -38,7 +39,7 @@ class MeasurementViewModelTest {
     val instanceExecutorRule = InstantTaskExecutorRule()
 
     @MockK
-    private lateinit var measurementRepository: MeasurementRepository
+    private lateinit var saveMeasurementUseCase: SaveMeasurementUseCase
 
     private lateinit var measurementViewModel: MeasurementViewModel
 
@@ -46,7 +47,7 @@ class MeasurementViewModelTest {
     fun setUp() {
         MockKAnnotations.init(this, relaxUnitFun = true)
         measurementViewModel = MeasurementViewModel(
-            measurementRepository = measurementRepository,
+            saveMeasurementUseCase = saveMeasurementUseCase,
             dispatcher = mainCoroutineRule.dispatcher
         )
     }
@@ -69,11 +70,11 @@ class MeasurementViewModelTest {
     @Test
     fun sensor_fail() = runTest {
 
-        coEvery { measurementRepository.saveMeasurement(any(), any(), any(), any()) } throws Exception()
+        coEvery { saveMeasurementUseCase.invoke(any(), any(), any(), any()) } throws Exception()
 
         measurementViewModel.saveMeasurement()
 
-        coVerify { measurementRepository.saveMeasurement(any(), any(), any(), any()) }
+        coVerify { saveMeasurementUseCase.invoke(any(), any(), any(), any()) }
 
     }
 
@@ -83,10 +84,10 @@ class MeasurementViewModelTest {
 
         val data = TestDataGenerator.generateSensorInfo()
 
-        coEvery { measurementRepository.saveMeasurement(any(), any(), any(), any()) } returns Unit
+        coEvery { saveMeasurementUseCase.invoke(any(), any(), any(), any()) } returns Unit
 
         measurementViewModel.sensorList.test {
-            measurementRepository.saveMeasurement(
+            saveMeasurementUseCase.invoke(
                 date = "data",
                 sensorList = listOf(data),
                 type = "ACC",
@@ -94,7 +95,7 @@ class MeasurementViewModelTest {
             )
             Truth.assertThat(expectItem()).isEqualTo(data)
         }
-        coVerify { measurementRepository.saveMeasurement(any(), any(), any(), any()) }
+        coVerify { saveMeasurementUseCase.invoke(any(), any(), any(), any()) }
     }
 }
 

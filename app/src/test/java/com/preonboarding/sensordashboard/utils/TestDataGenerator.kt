@@ -9,7 +9,7 @@ class TestDataGenerator {
     companion object {
 
         fun generateMeasurementEntity(): MeasurementEntity {
-            return MeasurementEntity(generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
+            return MeasurementEntity(5, generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
         }
 
         fun generateSensorInfo(): SensorInfo {
@@ -17,9 +17,9 @@ class TestDataGenerator {
         }
 
         fun generateMeasurementEntityList(): List<MeasurementEntity> {
-            val item1 = MeasurementEntity(generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36",60.00003)
-            val item2 = MeasurementEntity(generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36",60.00003)
-            val item3 = MeasurementEntity(generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36",60.00003)
+            val item1 = MeasurementEntity(1, generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36",60.00003)
+            val item2 = MeasurementEntity(2, generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36",60.00003)
+            val item3 = MeasurementEntity(3, generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36",60.00003)
             return listOf(item1, item2, item3)
         }
 
@@ -31,9 +31,9 @@ class TestDataGenerator {
         }
 
         fun generateMeasureResultList(): List<MeasurementEntity> {
-            val item1 = MeasurementEntity(generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
-            val item2 = MeasurementEntity(generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
-            val item3 = MeasurementEntity(generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
+            val item1 = MeasurementEntity(1, generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
+            val item2 = MeasurementEntity(2, generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
+            val item3 = MeasurementEntity(3, generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
             return listOf(item1, item2, item3)
         }
     }

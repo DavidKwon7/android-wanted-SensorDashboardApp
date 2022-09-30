@@ -50,11 +50,11 @@ class PagingSourceTest {
         mainCoroutineRule.runBlockingTest {
             val data = TestDataGenerator.generateMeasureResultList()
 
-            coEvery { measurementDAO.getAllMeasurement() } returns data
+            coEvery { measurementDAO.getAllMeasurement(any(), any()) } returns data
 
-            measurementDAO.getAllMeasurement()
+            measurementDAO.getAllMeasurement(1,1)
 
-            coVerify { measurementDAO.getAllMeasurement() }
+            coVerify { measurementDAO.getAllMeasurement(any(), any()) }
 
             val expectResult = PagingSource.LoadResult.Page(
                 data = data.mapToMeasureResult(),
@@ -77,7 +77,7 @@ class PagingSourceTest {
         mainCoroutineRule.runBlockingTest {
             val error = IOException("404", Throwable())
 
-            coEvery { measurementDAO.getAllMeasurement() } throws error
+            coEvery { measurementDAO.getAllMeasurement(any(), any()) } throws error
 
             val expectedResult = PagingSource.LoadResult.Error<Int, ClipData.Item>(error)
 
@@ -95,7 +95,7 @@ class PagingSourceTest {
     @Test
     fun paging_source_load_failure_received_null_exception() =
         mainCoroutineRule.runBlockingTest {
-            coEvery { measurementDAO.getAllMeasurement() } throws NullPointerException()
+            coEvery { measurementDAO.getAllMeasurement(any(), any()) } throws NullPointerException()
 
             val expectedResult = PagingSource.LoadResult.Error<Int, ClipData.Item>(NullPointerException())
 

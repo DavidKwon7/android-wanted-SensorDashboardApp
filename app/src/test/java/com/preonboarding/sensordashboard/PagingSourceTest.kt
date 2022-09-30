@@ -48,7 +48,7 @@ class PagingSourceTest {
     @Test
     fun load_PagingSource_Success() =
         mainCoroutineRule.runBlockingTest {
-            val data = TestDataGenerator.generateMeasureResultList()
+            val data = TestDataGenerator.generateMeasurementEntityList()
 
             coEvery { measurementDAO.getAllMeasurement(any(), any()) } returns data
 

@@ -25,12 +25,5 @@ class TestDataGenerator {
             val item3 = SensorInfo(3,3,3)
             return listOf(item1, item2, item3)
         }
-
-        fun generateMeasureResultList(): List<MeasurementEntity> {
-            val item1 = MeasurementEntity(1, generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
-            val item2 = MeasurementEntity(2, generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
-            val item3 = MeasurementEntity(3, generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
-            return listOf(item1, item2, item3)
-        }
     }
 }

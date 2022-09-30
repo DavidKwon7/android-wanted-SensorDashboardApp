@@ -12,8 +12,8 @@ class DashboardPagingAdapter(
     private val optionClicked: (MeasureResult) -> Unit,
     private val itemClicked: (MeasureResult) -> Unit
 ) : PagingDataAdapter<MeasureResult, DashboardPagingAdapter.DashboardViewHolder>(
-        DASHBOARD_DIFF_CALLBACK
-    ) {
+    DASHBOARD_DIFF_CALLBACK
+) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DashboardViewHolder {
         val inflater = LayoutInflater.from(parent.context)

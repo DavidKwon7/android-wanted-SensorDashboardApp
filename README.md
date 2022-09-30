@@ -659,22 +659,6 @@ fun setUp() {
 
 ```kotlin
 @Test
-fun test() {
-        runBlocking {
-            flow {
-                emit("test")
-                emit("test")
-            }.test {
-                assertThat(expectItem()).isEqualTo("test")
-                assertThat(expectItem()).isEqualTo("test")
-                expectComplete()
-            }
-        }
-    }
-```
-
-```kotlin
-@Test
 fun paging_source_load_failure_received_io_exception() =
     mainCoroutineRule.runBlockingTest{
 val error = IOException("404", Throwable())

@@ -1,5 +1,6 @@
 package com.preonboarding.sensordashboard.presentation.replay
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.activityViewModels
@@ -8,11 +9,18 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavArgs
 import androidx.navigation.fragment.navArgs
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
 import com.preonboarding.sensordashboard.R
 import com.preonboarding.sensordashboard.databinding.FragmentReplayBinding
+import com.preonboarding.sensordashboard.domain.model.SensorInfo
+import com.preonboarding.sensordashboard.domain.model.ViewType
 import com.preonboarding.sensordashboard.presentation.common.base.BaseFragment
 import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil.navigateUp
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -21,6 +29,7 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
 
     private val viewModel: ReplayViewModel by activityViewModels()
     private val args: ReplayFragmentArgs by navArgs()
+    var sensorInfoList: ArrayList<SensorInfo> = arrayListOf()
 
     /**
      * @author 이재성
@@ -31,6 +40,8 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
 
         registerObserver()
         initViews()
+
+
 
         Timber.e("${args.viewType}")
         Timber.e("${args.measureResult}")
@@ -68,5 +79,56 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
         binding.tbReplay.setNavigationOnClickListener {
             navigateUp()
         }
+        if(args.viewType==ViewType.VIEW){
+            viewChart(args.measureResult.measureInfo)
+        }
+        else {
+
+        }
     }
+
+    private fun viewChart(InfoList:List<SensorInfo>) {
+        val entriesX = ArrayList<Entry>()
+        val entriesY = ArrayList<Entry>()
+        val entriesZ = ArrayList<Entry>()
+
+        var i = 1F
+
+        for (it in InfoList) {
+            entriesX.add(Entry(i, it.x.toFloat()))
+            entriesY.add(Entry(i, it.y.toFloat()))
+            entriesZ.add(Entry(i, it.z.toFloat()))
+            i++
+        }
+
+        val dataSetX = LineDataSet(entriesX, "X")
+        val dataSetY = LineDataSet(entriesY, "Y")
+        val dataSetZ = LineDataSet(entriesZ, "Z")
+
+        dataSetX.color = Color.RED
+        dataSetX.setDrawCircles(false)
+        dataSetX.setDrawValues(false)
+
+        dataSetY.color = Color.GREEN
+        dataSetY.setDrawValues(false)
+        dataSetY.setDrawCircles(false)
+
+        dataSetZ.color = Color.BLUE
+        dataSetZ.setDrawValues(false)
+        dataSetZ.setDrawCircles(false)
+
+        val lineData = LineData()
+
+        lineData.addDataSet(dataSetX)
+        lineData.addDataSet(dataSetY)
+        lineData.addDataSet(dataSetZ)
+
+        binding.replayLineChart.apply {
+            data = lineData
+            lineData.notifyDataChanged()
+            notifyDataSetChanged()
+            invalidate()
+        }
+    }
+
 }

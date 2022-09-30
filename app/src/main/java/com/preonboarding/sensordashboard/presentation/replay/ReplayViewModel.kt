@@ -15,10 +15,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ReplayViewModel @Inject constructor (
-    measurementRepository: MeasurementRepository
 ): ViewModel() {
 
-    private val DEFAULT_TIME = (10.5 * 10).toInt()
+    var measureTime = 0
 
     private val _curViewType: MutableStateFlow<ViewType> =
         MutableStateFlow(ViewType.INITIAL)
@@ -37,11 +36,6 @@ class ReplayViewModel @Inject constructor (
 
     private lateinit var timerJob : Job
 
-
-    // 받은 시간 정보
-    // private val _getTime = 10.5 * 10
-    private var remainTime = DEFAULT_TIME
-
     private fun startTimer() {
         if(::timerJob.isInitialized) {
             timerJob.cancel()
@@ -49,14 +43,13 @@ class ReplayViewModel @Inject constructor (
 
         _timerCount.value = 0
         timerJob = viewModelScope.launch {
-            while (remainTime > 0) {
-                remainTime -= 1
-                _timerCount.value = timerCount.value.plus(1)
+            while (timerCount.value < measureTime) {
+                _timerCount.value = timerCount.value + 1
                 delay(100L)
             }
 
             changeTimerStatus()
-            remainTime = DEFAULT_TIME
+            _timerCount.value = measureTime
         }
     }
 
@@ -81,5 +74,9 @@ class ReplayViewModel @Inject constructor (
 
     fun setReplayViewType(viewType: ViewType) {
         _curViewType.value = viewType
+    }
+
+    fun applyTimeFormat(time: Double) {
+        measureTime = (time * 10).toInt()
     }
 }

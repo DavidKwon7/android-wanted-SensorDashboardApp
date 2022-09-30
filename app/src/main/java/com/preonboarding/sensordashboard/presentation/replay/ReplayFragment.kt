@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -26,7 +27,7 @@ import timber.log.Timber
 @AndroidEntryPoint
 class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_replay) {
 
-    private val viewModel: ReplayViewModel by activityViewModels()
+    private val viewModel: ReplayViewModel by viewModels()
     private val args: ReplayFragmentArgs by navArgs()
     var sensorInfoList: ArrayList<SensorInfo> = arrayListOf()
     private lateinit var timerJob: Job
@@ -41,15 +42,12 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
 
         registerObserver()
 
-
         initViews()
-        var viewType = args.viewType
-        viewModel.setReplayViewType(viewType)
 
+        binding.measureResult = args.measureResult
+        viewModel.setReplayViewType(args.viewType)
+        viewModel.applyTimeFormat(args.measureResult.measureTime)
 
-
-        Timber.e("${args.viewType}")
-        Timber.e("${args.measureResult}")
     }
 
     private fun registerObserver() {
@@ -87,11 +85,12 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
         if (args.viewType == ViewType.VIEW) {
             viewChart(args.measureResult.measureInfo)
         } else {
-            startTimer()
+
+            startDrawing()
         }
     }
 
-    fun startTimer() {
+    fun startDrawing() {
         if (::timerJob.isInitialized) {
             timerJob.cancel()
         }
@@ -109,7 +108,7 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
         }
     }
 
-    private fun stopTimer() {
+    private fun stopDrawing() {
         if (::timerJob.isInitialized) {
             timerJob.cancel()
         }

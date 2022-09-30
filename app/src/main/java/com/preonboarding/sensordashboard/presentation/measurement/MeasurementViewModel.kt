@@ -80,9 +80,6 @@ class MeasurementViewModel @Inject constructor(
         val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
         val date: String = sdf.format(currentTime)
 
-        Timber.tag(TAG).d("[저장]\ntype : ${_curMeasureTarget.value.type}\nsensorList : ${_sensorList.value}\ndate: $date\ntime : ${_curSecond.value}")
-        Timber.tag(TAG).d("데이터 개수 : ${_sensorList.value.size}")
-
         setIsMeasuring(false)
 
         viewModelScope.launch(dispatcher) {
@@ -95,7 +92,6 @@ class MeasurementViewModel @Inject constructor(
                 )
             }
                 .onSuccess {
-                    Timber.tag(TAG).e("저장 성공")
                     _uiState.value = MeasurementUiState.SaveSuccess
                     clearMeasurementInfo()
                 }

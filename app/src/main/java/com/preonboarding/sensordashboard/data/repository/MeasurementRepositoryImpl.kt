@@ -3,6 +3,7 @@ package com.preonboarding.sensordashboard.data.repository
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.preonboarding.sensordashboard.common.Constant.PAGE_SIZE
 import com.preonboarding.sensordashboard.data.dao.MeasurementDAO
 import com.preonboarding.sensordashboard.data.entity.MeasurementEntity
 import com.preonboarding.sensordashboard.data.paging.MeasurementPagingSource
@@ -22,9 +23,9 @@ class MeasurementRepositoryImpl @Inject constructor(
     override suspend fun getAllMeasurement(): Flow<PagingData<MeasureResult>> {
         return Pager(
             config = PagingConfig(
-                pageSize = 10,
+                pageSize = PAGE_SIZE,
                 enablePlaceholders = false,
-                initialLoadSize = 10
+                initialLoadSize = PAGE_SIZE
             ),
             pagingSourceFactory = { MeasurementPagingSource(measurementDao) }
         ).flow

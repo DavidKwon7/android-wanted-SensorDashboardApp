@@ -2,13 +2,12 @@ package com.preonboarding.sensordashboard.data.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.preonboarding.sensordashboard.common.Constant.PAGING_DELAY
+import com.preonboarding.sensordashboard.common.Constant.STARTING_KEY
 import com.preonboarding.sensordashboard.data.dao.MeasurementDAO
-import com.preonboarding.sensordashboard.data.entity.MeasurementEntity
 import com.preonboarding.sensordashboard.domain.mapper.MeasurementMapper.mapToMeasureResult
 import com.preonboarding.sensordashboard.domain.model.MeasureResult
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.map
-import timber.log.Timber
 
 class MeasurementPagingSource(
     private val dao: MeasurementDAO
@@ -21,16 +20,12 @@ class MeasurementPagingSource(
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MeasureResult> {
-
         val page = params.key ?: STARTING_KEY
 
-        Timber.e("${params.key} // ${params.loadSize}")
-        Timber.e("$page")
-        if (page != STARTING_KEY) delay(1000L)
+        if (page != STARTING_KEY) delay(PAGING_DELAY)
 
         return try {
             val measureResult = dao.getAllMeasurement(page, params.loadSize).mapToMeasureResult()
-            Timber.e("$measureResult")
 
             LoadResult.Page(
                 data = measureResult,
@@ -40,10 +35,5 @@ class MeasurementPagingSource(
         } catch (e: Throwable) {
             LoadResult.Error(e)
         }
-    }
-
-    companion object {
-        private const val STARTING_KEY = 1
-        private const val PAGING_DELAY = 1000L
     }
 }

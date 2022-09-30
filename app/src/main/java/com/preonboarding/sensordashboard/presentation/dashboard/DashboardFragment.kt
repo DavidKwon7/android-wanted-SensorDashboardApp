@@ -2,7 +2,7 @@ package com.preonboarding.sensordashboard.presentation.dashboard
 
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.activityViewModels
+import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -10,10 +10,12 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.preonboarding.sensordashboard.R
 import com.preonboarding.sensordashboard.databinding.FragmentDashboardBinding
+import com.preonboarding.sensordashboard.domain.model.MeasureResult
 import com.preonboarding.sensordashboard.domain.model.ViewType
+import com.preonboarding.sensordashboard.presentation.common.OptionDialog
 import com.preonboarding.sensordashboard.presentation.common.base.BaseFragment
 import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil.navigate
-import com.preonboarding.sensordashboard.presentation.replay.ReplayViewModel
+import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil.navigateWithArgs
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -23,8 +25,16 @@ import timber.log.Timber
 class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragment_dashboard) {
 
     private val viewModel: DashboardViewModel by viewModels()
-    private val replayViewModel: ReplayViewModel by activityViewModels()
-    private val pagingAdapter: DashboardPagingAdapter by lazy { DashboardPagingAdapter() }
+    private val pagingAdapter: DashboardPagingAdapter by lazy {
+        DashboardPagingAdapter(
+            optionClicked = {
+                showDialog(it)
+            },
+            itemClicked = {
+                navigateWithArgs(DashboardFragmentDirections.actionDashboardToReplay(it, ViewType.VIEW))
+            }
+        )
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -51,11 +61,6 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
         btnMeasurement.setOnClickListener {
             navigate(R.id.action_dashboard_to_measurement)
         }
-
-        btnReplay.setOnClickListener {
-            navigate(R.id.action_dashboard_to_replay)
-            replayViewModel.setReplayViewType(ViewType.REPLAY)
-        }
     }
 
     private fun observeMeasureData() {
@@ -67,5 +72,18 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
                 }
             }
         }
+    }
+
+    private fun showDialog(measureResult: MeasureResult) {
+        val dialog = OptionDialog(
+            requireContext(),
+            playClicked = {
+                navigateWithArgs(DashboardFragmentDirections.actionDashboardToReplay(measureResult, ViewType.PLAY))
+            },
+            deleteClicked = {
+                Toast.makeText(requireContext(), "Delete", Toast.LENGTH_SHORT).show()
+            })
+
+        dialog.showDialog()
     }
 }

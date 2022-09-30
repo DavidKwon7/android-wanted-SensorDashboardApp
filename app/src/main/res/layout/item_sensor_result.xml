@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="measureResult"
             type="com.preonboarding.sensordashboard.domain.model.MeasureResult" />
@@ -11,6 +12,7 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_measure_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
@@ -19,9 +21,9 @@
             android:id="@+id/tv_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="@{measureResult.date}"
             android:textColor="@color/black"
             android:textSize="14sp"
-            android:text="@{measureResult.date}"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="2022/09/08 14:50:43" />
@@ -31,9 +33,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:minWidth="150dp"
+            android:text="@{measureResult.measureType}"
             android:textColor="@color/black"
             android:textSize="22sp"
-            android:text="@{measureResult.measureType}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_date"
@@ -44,16 +47,28 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
             android:gravity="center"
-            android:padding="8dp"
+            android:maxLines="1"
+            android:text="@{String.valueOf(measureResult.measureTime)}"
             android:textColor="@color/black"
             android:textSize="28sp"
-            android:text="@{String.valueOf(measureResult.measureTime)}"
             app:layout_constraintBottom_toBottomOf="@id/tv_measure_type"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/iv_option"
             app:layout_constraintStart_toEndOf="@id/tv_measure_type"
             app:layout_constraintTop_toTopOf="@id/tv_date"
-            tools:text="43.4" />
+            app:layout_goneMarginStart="8dp"
+            tools:text="22.500000000000000" />
+
+        <ImageView
+            android:id="@+id/iv_option"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_option_24"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tv_measure_time"
+            app:layout_constraintTop_toTopOf="@id/tv_measure_time" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

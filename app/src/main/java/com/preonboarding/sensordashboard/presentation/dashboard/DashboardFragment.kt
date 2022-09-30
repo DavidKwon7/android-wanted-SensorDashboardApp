@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.RecyclerView
 import com.preonboarding.sensordashboard.R
 import com.preonboarding.sensordashboard.databinding.FragmentDashboardBinding
 import com.preonboarding.sensordashboard.domain.model.MeasureResult
@@ -54,13 +55,19 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
     private fun initRecyclerView() {
         binding.rvDashboard.apply {
             adapter = pagingAdapter
-
             val itemDecoration = DividerItemDecoration(
                 requireContext(),
                 DividerItemDecoration.VERTICAL
             )
             addItemDecoration(itemDecoration)
         }
+
+        pagingAdapter.registerAdapterDataObserver(object: RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                super.onItemRangeInserted(positionStart, itemCount)
+                binding.rvDashboard.scrollToPosition(0)
+            }
+        })
     }
 
     private fun bindViews() = with(binding) {
@@ -120,5 +127,9 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
                 }
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "Dashboard"
     }
 }

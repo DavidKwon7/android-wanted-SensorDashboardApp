@@ -67,7 +67,7 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.measureData.collectLatest { measureList ->
-                    Timber.e("${measureList}")
+                    Timber.e("$measureList")
                     pagingAdapter.submitData(measureList)
                 }
             }

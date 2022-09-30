@@ -1,35 +1,35 @@
 # 원티드 프리온보딩 안드로이드
 
-  * [1. Project Introduction](#1-project-introduction)
-  * [2. People](#2-people)
-  * [3. Architecture](#3-architecture)
-  * [4. Feature & Screen](#4-feature---screen)
+* [1. Project Introduction](#1-project-introduction)
+* [2. People](#2-people)
+* [3. Architecture](#3-architecture)
+* [4. Feature & Screen](#4-feature---screen)
     + [1. 대시보드](#1-대시보드)
     + [2. 측정 하기](#2-측정-하기)
     + [3. 측정 그래프 띄우기](#3-측정-그래프-띄우기)
     + [4. 재생 하기](#4-재생-하기)
     + [5. Unit Test](#5-unit-test)
-  * [5. Technology Stack](#5-technology-stack)
-  * [6. Convention](#6-convention)
-  * [7. How to run](#7-how-to-run)
+* [5. Technology Stack](#5-technology-stack)
+* [6. Convention](#6-convention)
+* [7. How to run](#7-how-to-run)
 
 ## 1. Project Introduction
 
-[2주차 과제 링크](https://www.notion.so/8a916a4656b742dc83c586ccc93751e0) 
+[2주차 과제 링크](https://www.notion.so/8a916a4656b742dc83c586ccc93751e0)
 
 <img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=Android&logoColor=white"> <img src="https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=Kotlin&logoColor=white">
 
 > 원티드 프리온보딩 2차 기업 과제
-> 
+>
 
 > 6축 데이터(가속도(acc) 3축 + 각속도(gyro) 3축)를 측정하는 앱 서비스
-> 
+>
 
 > 6축 데이터를 수집하여 로컬 저장소에 저장
-> 
+>
 
 > 저장된 데이터를 불러와서 그래프로 표현
-> 
+>
 
 ## 2. People
 
@@ -48,6 +48,7 @@
 ```
 🔖
 .
+├── common
 ├── data
 │   ├── converter
 │   ├── dao
@@ -63,6 +64,7 @@
 │   └── usecase
 └── presentation
     ├── common
+    │   ├── adapter
     │   ├── base
     │   ├── state
     │   └── util
@@ -76,18 +78,28 @@
 ## 4. Feature & Screen
 
 ### 1. 대시보드
-* Room Local DB에 저장되어 있는 측정 데이터를 페이징하여 무한 스크롤되도록 구현
+* Room Local DB에 저장되어 있는 측정 데이터를 가져와 무한 스크롤되도록 구현 (Paging)
+* 항목 클릭 및 다이얼로그 클릭에 따른 화면 전환 구현(Navigation)
 
 #### Dao
 ```kotlin
 @Dao
 interface MeasurementDAO {
-    @Query("SELECT * from MEASUREMENTS")
-    suspend fun getAllMeasurement(): List<MeasurementEntity>
+    @Query("SELECT * from measurements ORDER BY date DESC LIMIT :loadSize OFFSET (:page - 1) * :loadSize")
+    suspend fun getAllMeasurement(page: Int, loadSize: Int): List<MeasurementEntity>
 
-    ...
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun saveMeasurement(measurementEntity: MeasurementEntity)
+
+    @Query("DELETE FROM measurements WHERE id = :id")
+    suspend fun deleteMeasurementById(id: Int)
 }
 ```
+* Room DB 질의를 위한 인터페이스
+* 페이징 시 `loadSize`를 통한 `LIMIT`과 그에 따른 `OFFSET`을 통해 데이터를 가져옴
+    * ex) page 1 - OFFSET 0 // page 2 - OFFSET 10
+* PK인 id를 이용한 삭제
+
 
 #### PagingSource
 ```kotlin
@@ -102,71 +114,69 @@ class MeasurementPagingSource(
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MeasureResult> {
-        val page = params.key ?: 0
+        val page = params.key ?: STARTING_KEY
+
+        if (page != STARTING_KEY) delay(PAGING_DELAY)
 
         return try {
-            val measureResult = dao.getAllMeasurement().mapToMeasureResult()
+            val measureResult = dao.getAllMeasurement(page, params.loadSize).mapToMeasureResult()
 
             LoadResult.Page(
                 data = measureResult,
-                prevKey = if (page == 0) null else page - 1,
+                prevKey = if (page == STARTING_KEY) null else page - 1,
                 nextKey = if (measureResult.isEmpty()) null else page + 1
             )
         } catch (e: Throwable) {
-            e.printStackTrace()
             LoadResult.Error(e)
         }
     }
 }
 ```
+* `MeasurementPagingSource#getRefreshKey`를 통해 데이터 로드시 사용될 Key 값을 가져옴
+* `MeasurementPagingSource#load`를 통해 dao에 접근하여 prevKey와 nextKey에 맞게 데이터를 반환
 
-#### RepositoryImpl
+#### RepositoryImpl#getAllMeasurement & UseCase
 ```kotlin
-class MeasurementRepositoryImpl @Inject constructor(
-    private val measurementDao: MeasurementDAO
-) : MeasurementRepository {
-
-    // Dispatcher IO -> Dispatcher.Default
-    override suspend fun getAllMeasurement(): Flow<PagingData<MeasureResult>> {
-        return Pager(
-            config = PagingConfig(
-                pageSize = 10,
-                enablePlaceholders = true,
-                initialLoadSize = 10
-            ),
-            pagingSourceFactory = { MeasurementPagingSource(measurementDao) }
-        ).flow.flowOn(Dispatchers.Default)
-    }
-
-		...
+override suspend fun getAllMeasurement(): Flow<PagingData<MeasureResult>> {
+    return Pager(
+        config = PagingConfig(
+            pageSize = PAGE_SIZE,
+            enablePlaceholders = false,
+            initialLoadSize = PAGE_SIZE
+        ),
+        pagingSourceFactory = { MeasurementPagingSource(measurementDao) }
+    ).flow
+}
+```
+```kotlin
+class GetAllMeasurementUseCase @Inject constructor(
+    private val measurementRepository: MeasurementRepository
+) {
+    suspend operator fun invoke() =
+        measurementRepository.getAllMeasurement().flowOn(Dispatchers.Default)
 
 }
 ```
 
 #### ViewModel
 ```kotlin
-@HiltViewModel
-class DashboardViewModel @Inject constructor(
-    private val measurementRepository: MeasurementRepository
-) : ViewModel() {
-
-    // 전체 측정 데이터
-    private val _measureData: MutableStateFlow<PagingData<MeasureResult>> =
-        MutableStateFlow<PagingData<MeasureResult>>(PagingData.empty())
-    val measureData: StateFlow<PagingData<MeasureResult>> = _measureData.asStateFlow()
+private val _measureData: MutableStateFlow<PagingData<MeasureResult>> =
+        MutableStateFlow(PagingData.empty())
+val measureData: StateFlow<PagingData<MeasureResult>> = _measureData.asStateFlow()
 
 
-    fun getAllMeasurement() {
-        viewModelScope.launch {
-            measurementRepository.getAllMeasurement()
-                .cachedIn(viewModelScope)
-                .collectLatest { measureList ->
-                    _measureData.emit(measureList)
-                }
-        }
+fun getAllMeasurement() {
+    viewModelScope.launch {
+        getAllMeasurementUseCase.invoke()
+            .cachedIn(viewModelScope)
+            .collectLatest { measureList ->
+                _measureData.emit(measureList)
+            }
     }
 }
 ```
+* 가져온 측정 데이터를 ViewModelScope상에 캐시
+* StateFlow를 통해 emit
 
 #### Fragment#observeMeasureData
 ```kotlin
@@ -180,14 +190,56 @@ private fun observeMeasureData() {
     }
 }
 ```
+* Lifecycle의 State가 `STARTED` 상태로 도달 할때만 데이터를 수집하여 adapter에 전달한다.
+* `launchWhenXXX`와 같은 flow 확장함수와는 달리 `repeatOnLifecycle`을 사용하면 해당 State 도달 시 자동으로 수집 중단 및 업스트림 flow를 취소한다.
+
+#### 문제 해결
+1. Paging 시 동일 데이터를 반복적으로 가져오던 이슈
+   https://github.com/DavidKwon7/android-wanted-SensorDashboardApp/pull/14
+
+2. 데이터 삭제 후 UI가 리프레시 되지 않는 이슈
+
+```kotlin
+private fun showDialog(measureResult: MeasureResult) {
+    val dialog = OptionDialog(
+        requireContext(),
+        playClicked = {
+            navigateWithArgs(
+                DashboardFragmentDirections.actionDashboardToReplay(
+                    measureResult,
+                    ViewType.PLAY
+                )
+            )
+        },
+        deleteClicked = {
+            viewModel.deleteMeasurementById(measureResult.id)
+            updateMeasureResult()
+        })
+
+    dialog.showDialog()
+}
+
+private fun updateMeasureResult() {
+    viewLifecycleOwner.lifecycleScope.launch {
+        viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            kotlin.runCatching {
+                viewModel.getAllMeasurement()
+            }.onSuccess {
+                viewModel.measureData.collectLatest {
+                    pagingAdapter.submitData(it)
+                }
+            }
+        }
+    }
+}
+```
+* 다이얼로그가 dismiss되면서 `RESUME`상태가 될 때 `getAllMeasurement()`를 호출하여 데이터를 갱신하는 형태로 구현
 
 #### 결과
 
-<img src="https://user-images.githubusercontent.com/51078673/193122897-43e936ec-a2f5-4e3e-92ea-e3eea05974be.gif" width=300>
+<img src="https://user-images.githubusercontent.com/51078673/193296404-250ada2d-83b8-42b1-b7b9-bc59959e9096.gif" width=300>
 
-#### 남은 Task
-1. 측정 데이터 삭제
-2. 페이징 오류 수정
+
 
 ---
 
@@ -469,69 +521,142 @@ private fun String.createSet(chartColor: Int): ILineDataSet {
     }
 ```
 
-이 방법을 채택 못한 이유 → line 한개는 잘 실행되지만  dataset을 여러개 만들려고 하니 값들이 한번에 합쳐진다. 
+이 방법을 채택 못한 이유 → line 한개는 잘 실행되지만  dataset을 여러개 만들려고 하니 값들이 한번에 합쳐진다.
 
 ---
 
 ### 4. 재생 하기
 
-- 측정 시간을 받아서 해당 시간 만큼 초 세기
+#### 1. 주어진 시간 만큼 타이머 작동
+
+| timer |
+|:----:|
+|<img src="https://user-images.githubusercontent.com/110798031/193276742-9a7e9524-d26d-48b9-94bd-0665fa885e64.gif" width="180" height="400">|
+- `ReplayViewModel`
 - 정지했을 경우 0초부터 다시 시작
+- ui state에 따라 버튼 모양 변경 및 타이머 시작/정지
 
 ```kotlin
-class ReplayViewModel: ViewModel() {
+@HiltViewModel
+class ReplayViewModel @Inject constructor (
+): ViewModel() {
 
-    private val _timerCount = MutableLiveData<Double>()
-    private lateinit var a : Job
+    var measureTime = 0
 
-    val timerCount : LiveData<Double>
-        get() = _timerCount
+    private lateinit var timerJob : Job
 
-    // 받은 시간 정보(임시)
-    private val _getTime = 10.5
-    var getTime = _getTime
-
-    fun timerStart() {
-        if(::a.isInitialized) {
-            a.cancel()
+    private fun startTimer() {
+        if(::timerJob.isInitialized) {
+            timerJob.cancel()
         }
 
-        _timerCount.value = 0.0
-        a = viewModelScope.launch {
-            while (getTime > 0) {
-                getTime -= 0.1
-                _timerCount.value = timerCount.value?.plus(0.1)
+        _timerCount.value = 0
+        timerJob = viewModelScope.launch {
+            while (timerCount.value < measureTime) {
+                _timerCount.value = timerCount.value + 1
                 delay(100L)
             }
 
-            getTime = _getTime
-
+            changeTimerStatus()
+            _timerCount.value = measureTime
         }
     }
 
-    fun timerStop() {
-        if (::a.isInitialized) {
-            a.cancel()
+    private fun stopTimer() {
+        if (::timerJob.isInitialized) {
+            timerJob.cancel()
         }
     }
 
+    fun changeTimerStatus() {
+        when (curPlayType.value) {
+            PlayType.Stop -> {
+                _curPlayType.value = PlayType.Play
+                startTimer()
+            }
+            PlayType.Play -> {
+                _curPlayType.value = PlayType.Stop
+                stopTimer()
+            }
+        }
+    }
+
+    fun applyTimeFormat(time: Double) {
+        measureTime = (time * 10).toInt()
+    }
 }
 ```
 
-- 버튼을 누를 때마다 타이머 실행 및 중지
+#### 2. ViewType에 따른 ui 상태 관리
+
+| view type | play type |
+|:----:|:----:|
+|<img src="https://user-images.githubusercontent.com/110798031/193276497-567f090d-b542-4e34-89db-1aae6f61ecd6.gif" width="180" height="400">|<img src="https://user-images.githubusercontent.com/110798031/193276295-d6c7a60c-c5d8-4a13-b96a-21c26b38c749.gif" width="180" height="400">|
+- `ReplayBindingAdapter`
+- xml에 바인딩하여 보여지는 컴포넌트 분기 처리
 
 ```kotlin
-private fun changeBtnState() {
-    if(play) {
-        binding.btnPlayStop.isSelected = true
-        play = !play
-        //TODO: 그래프 실행
-        viewModel.timerStart()
-    } else {
-        binding.btnPlayStop.isSelected = false
-        play = !play
-        //TODO: 그래프 중지
-        viewModel.timerStop()
+@BindingAdapter("stopVisibilityPlayType", "stopVisibilityViewType")
+fun changeStopVisibility(view: ImageView, playType: PlayType?, viewType: ViewType?) {
+    if (viewType == null || playType == null) return
+    when (viewType) {
+        ViewType.PLAY -> {
+            when (playType) {
+                is PlayType.Stop -> {
+                    view.visibility = View.VISIBLE
+                }
+                is PlayType.Play -> {
+                    view.visibility = View.GONE
+                }
+            }
+        }
+        ViewType.VIEW -> {
+            view.visibility = View.GONE
+        }
+        ViewType.INITIAL -> {
+            // Error Status, when initial status, users cannot enter replay fragment
+        }
+    }
+}
+
+@BindingAdapter("playVisibilityPlayType", "playVisibilityViewType")
+fun changePlayVisibility(view: ImageView, playType: PlayType?, viewType: ViewType?) {
+    if (viewType == null || playType == null) return
+
+    when (viewType) {
+        ViewType.PLAY -> {
+            when (playType) {
+                is PlayType.Stop -> {
+                    view.visibility = View.GONE
+                }
+                is PlayType.Play -> {
+                    view.visibility = View.VISIBLE
+                }
+            }
+        }
+        ViewType.VIEW -> {
+            view.visibility = View.GONE
+        }
+        ViewType.INITIAL -> {
+            // Error Status, when initial status, users cannot enter replay fragment
+        }
+    }
+}
+
+@BindingAdapter("timerVisibilityPlayType", "timerVisibilityViewType")
+fun changeTimerVisibility(view: TextView, playType: PlayType?, viewType: ViewType?) {
+    if (viewType == null || playType == null) return
+
+    when (viewType) {
+        ViewType.PLAY -> {
+            view.visibility = View.VISIBLE
+        }
+        ViewType.VIEW -> {
+            view.visibility = View.GONE
+        }
+        ViewType.INITIAL -> {
+            // Error Status, when initial status, users cannot enter replay fragment
+        }
     }
 }
 ```
@@ -540,7 +665,7 @@ private fun changeBtnState() {
 
 ### 5. Unit Test
 
-1. `MainCoroutineRule` 생성 
+1. `MainCoroutineRule` 생성
 
 ```kotlin
 @ExperimentalCoroutinesApi
@@ -561,7 +686,7 @@ class MainCoroutineRule(
 }
 ```
 
-2. 테스트 환경 
+2. 테스트 환경
 
 ```kotlin
 @get:Rule
@@ -582,7 +707,7 @@ fun setUp() {
 }
 ```
 
-3. 테스트 
+3. 테스트
 
 ```kotlin
 @Test
@@ -604,9 +729,9 @@ fun test() {
 @Test
 fun paging_source_load_failure_received_io_exception() =
     mainCoroutineRule.runBlockingTest{
-val error = IOException("404", Throwable())
+        val error = IOException("404", Throwable())
 
-coEvery{measurementDAO.getAllMeasurement()} throws error
+        coEvery{measurementDAO.getAllMeasurement()} throws error
 
         val expectedResult = PagingSource.LoadResult.Error<Int, ClipData.Item>(error)
 
@@ -619,7 +744,7 @@ coEvery{measurementDAO.getAllMeasurement()} throws error
                 )
             )
         )
-}
+    }
 ```
 
 ---
@@ -645,7 +770,7 @@ coEvery{measurementDAO.getAllMeasurement()} throws error
     - JUnit4
     - MockK
     - Turbine
-    
+
 ---
 
 ## ****6. Convention****

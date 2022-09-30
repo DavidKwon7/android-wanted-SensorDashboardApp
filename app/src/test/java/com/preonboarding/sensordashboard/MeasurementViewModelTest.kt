@@ -5,16 +5,19 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.preonboarding.sensordashboard.domain.model.MeasureTarget
+import com.preonboarding.sensordashboard.domain.model.SensorInfo
 import com.preonboarding.sensordashboard.domain.repository.MeasurementRepository
 import com.preonboarding.sensordashboard.domain.usecase.SaveMeasurementUseCase
 import com.preonboarding.sensordashboard.presentation.measurement.MeasurementViewModel
 import com.preonboarding.sensordashboard.utils.MainCoroutineRule
 import com.preonboarding.sensordashboard.utils.TestDataGenerator
+import io.mockk.InternalPlatformDsl.toArray
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
@@ -64,22 +67,16 @@ class MeasurementViewModelTest {
     }
 
     @Test
-    fun save_MeasurementData_Success() = runTest {
+    fun check_StateFlow_Right() = runTest {
 
         val data = TestDataGenerator.generateSensorInfo()
 
-        coEvery { saveMeasurementUseCase.invoke(any(), any(), any(), any()) } returns Unit
+        val sensorList = MutableStateFlow<SensorInfo>(data)
 
-        measurementViewModel.sensorList.test {
-            saveMeasurementUseCase.invoke(
-                date = "data",
-                sensorList = listOf(data),
-                type = "ACC",
-                time = 13.00,
-            )
-            Truth.assertThat(expectItem()).isEqualTo(data)
+        sensorList.emit(data)
+        sensorList.test {
+            assertThat(expectItem()).isEqualTo(data)
         }
-        coVerify { saveMeasurementUseCase.invoke(any(), any(), any(), any()) }
     }
 }
 

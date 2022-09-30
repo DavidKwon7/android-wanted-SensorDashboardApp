@@ -5,15 +5,19 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.preonboarding.sensordashboard.domain.model.MeasureTarget
+import com.preonboarding.sensordashboard.domain.model.SensorInfo
 import com.preonboarding.sensordashboard.domain.repository.MeasurementRepository
+import com.preonboarding.sensordashboard.domain.usecase.SaveMeasurementUseCase
 import com.preonboarding.sensordashboard.presentation.measurement.MeasurementViewModel
 import com.preonboarding.sensordashboard.utils.MainCoroutineRule
 import com.preonboarding.sensordashboard.utils.TestDataGenerator
+import io.mockk.InternalPlatformDsl.toArray
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
@@ -38,7 +42,7 @@ class MeasurementViewModelTest {
     val instanceExecutorRule = InstantTaskExecutorRule()
 
     @MockK
-    private lateinit var measurementRepository: MeasurementRepository
+    private lateinit var saveMeasurementUseCase: SaveMeasurementUseCase
 
     private lateinit var measurementViewModel: MeasurementViewModel
 
@@ -46,55 +50,33 @@ class MeasurementViewModelTest {
     fun setUp() {
         MockKAnnotations.init(this, relaxUnitFun = true)
         measurementViewModel = MeasurementViewModel(
-            measurementRepository = measurementRepository,
+            saveMeasurementUseCase = saveMeasurementUseCase,
             dispatcher = mainCoroutineRule.dispatcher
         )
     }
 
-    // sample
     @Test
-    fun testSample() {
-        runBlocking {
-            flow {
-                emit("test")
-                emit("test")
-            }.test {
-                assertThat(expectItem()).isEqualTo("test")
-                assertThat(expectItem()).isEqualTo("test")
-                expectComplete()
-            }
-        }
-    }
+    fun save_MeasurementData_Fail() = runTest {
 
-    @Test
-    fun sensor_fail() = runTest {
-
-        coEvery { measurementRepository.saveMeasurement(any(), any(), any(), any()) } throws Exception()
+        coEvery { saveMeasurementUseCase.invoke(any(), any(), any(), any()) } throws Exception()
 
         measurementViewModel.saveMeasurement()
 
-        coVerify { measurementRepository.saveMeasurement(any(), any(), any(), any()) }
+        coVerify { saveMeasurementUseCase.invoke(any(), any(), any(), any()) }
 
     }
 
-    // todo 수정 필요
     @Test
-    fun sensor_success() = runTest {
+    fun check_StateFlow_Right() = runTest {
 
         val data = TestDataGenerator.generateSensorInfo()
 
-        coEvery { measurementRepository.saveMeasurement(any(), any(), any(), any()) } returns Unit
+        val sensorList = MutableStateFlow<SensorInfo>(data)
 
-        measurementViewModel.sensorList.test {
-            measurementRepository.saveMeasurement(
-                date = "data",
-                sensorList = listOf(data),
-                type = "ACC",
-                time = 13.00,
-            )
-            Truth.assertThat(expectItem()).isEqualTo(data)
+        sensorList.emit(data)
+        sensorList.test {
+            assertThat(expectItem()).isEqualTo(data)
         }
-        coVerify { measurementRepository.saveMeasurement(any(), any(), any(), any()) }
     }
 }
 

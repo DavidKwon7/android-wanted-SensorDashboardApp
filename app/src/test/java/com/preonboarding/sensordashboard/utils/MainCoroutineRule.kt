@@ -8,8 +8,9 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
 @ExperimentalCoroutinesApi
+
 class MainCoroutineRule(
-    val dispatcher: CoroutineDispatcher = TestCoroutineDispatcher()
+    val dispatcher: CoroutineDispatcher = UnconfinedTestDispatcher()
 ) : TestWatcher(), TestCoroutineScope by TestCoroutineScope(dispatcher){
 
     override fun starting(description: Description?) {
@@ -23,3 +24,4 @@ class MainCoroutineRule(
         Dispatchers.resetMain()
     }
 }
+

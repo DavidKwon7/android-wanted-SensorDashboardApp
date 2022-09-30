@@ -31,6 +31,8 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
 
         registerObserver()
         initViews()
+        var viewType = args.viewType
+        viewModel.setReplayViewType(viewType)
 
         Timber.e("${args.viewType}")
         Timber.e("${args.measureResult}")

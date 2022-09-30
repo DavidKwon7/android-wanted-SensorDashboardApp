@@ -16,7 +16,7 @@ fun applyMilliFormat(view: TextView, time: Int) {
 fun changeStopVisibility(view: ImageView, playType: PlayType?, viewType: ViewType?) {
     if (viewType == null || playType == null) return
     when (viewType) {
-        ViewType.REPLAY -> {
+        ViewType.PLAY -> {
             when (playType) {
                 is PlayType.Stop -> {
                     view.visibility = View.VISIBLE
@@ -40,7 +40,7 @@ fun changePlayVisibility(view: ImageView, playType: PlayType?, viewType: ViewTyp
     if (viewType == null || playType == null) return
 
     when (viewType) {
-        ViewType.REPLAY -> {
+        ViewType.PLAY -> {
             when (playType) {
                 is PlayType.Stop -> {
                     view.visibility = View.GONE
@@ -64,7 +64,7 @@ fun changeTimerVisibility(view: TextView, playType: PlayType?, viewType: ViewTyp
     if (viewType == null || playType == null) return
 
     when (viewType) {
-        ViewType.REPLAY -> {
+        ViewType.PLAY -> {
             when (playType) {
                 is PlayType.Stop -> {
                     view.visibility = View.GONE

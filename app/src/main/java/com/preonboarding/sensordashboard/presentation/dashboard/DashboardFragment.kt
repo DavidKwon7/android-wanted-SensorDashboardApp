@@ -2,7 +2,6 @@ package com.preonboarding.sensordashboard.presentation.dashboard
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -21,7 +20,6 @@ import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @AndroidEntryPoint
 class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragment_dashboard) {
@@ -75,7 +73,6 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.measureData.collectLatest { measureList ->
-                    Timber.e("$measureList")
                     pagingAdapter.submitData(measureList)
                 }
             }
@@ -86,7 +83,6 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 pagingAdapter.loadStateFlow.collect {
-                    Timber.e("${it.source.append}")
                     binding.lpiPaging.isVisible = it.source.append is LoadState.Loading
                 }
             }

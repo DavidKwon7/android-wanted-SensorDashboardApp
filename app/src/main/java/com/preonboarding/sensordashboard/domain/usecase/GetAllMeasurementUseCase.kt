@@ -10,5 +10,4 @@ class GetAllMeasurementUseCase @Inject constructor(
 ) {
     suspend operator fun invoke() =
         measurementRepository.getAllMeasurement().flowOn(Dispatchers.Default)
-
 }

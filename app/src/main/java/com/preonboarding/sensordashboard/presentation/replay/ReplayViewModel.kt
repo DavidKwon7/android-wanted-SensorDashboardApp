@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.preonboarding.sensordashboard.domain.model.PlayType
 import com.preonboarding.sensordashboard.domain.model.ViewType
-import com.preonboarding.sensordashboard.domain.repository.MeasurementRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -36,47 +35,53 @@ class ReplayViewModel @Inject constructor (
 
     private lateinit var timerJob : Job
 
-    private fun startTimer() {
-        if(::timerJob.isInitialized) {
-            timerJob.cancel()
-        }
-
-        _timerCount.value = 0
-        timerJob = viewModelScope.launch {
-            while (timerCount.value < measureTime) {
-                _timerCount.value = timerCount.value + 1
-                delay(100L)
-            }
-
-            changeTimerStatus()
-            _timerCount.value = measureTime
+    init {
+        viewModelScope.launch {
+            observeTimer()
         }
     }
 
-    private fun stopTimer() {
-        if (::timerJob.isInitialized) {
-            timerJob.cancel()
-        }
-    }
+    private suspend fun observeTimer() {
+        curPlayType.collect {
+            when(it) {
+                is PlayType.Stop -> {
+                    if (::timerJob.isInitialized) {
+                        timerJob.cancel()
+                    }
+                }
+                is PlayType.Play -> {
+                    if(::timerJob.isInitialized) {
+                        timerJob.cancel()
+                    }
 
-    fun changeTimerStatus() {
-        when (curPlayType.value) {
-            PlayType.Stop -> {
-                _curPlayType.value = PlayType.Play
-                startTimer()
-            }
-            PlayType.Play -> {
-                _curPlayType.value = PlayType.Stop
-                stopTimer()
+                    _timerCount.value = 0
+                    timerJob = viewModelScope.launch {
+                        while (timerCount.value < measureTime) {
+                            _timerCount.value = timerCount.value + 1
+                            delay(100L)
+                        }
+
+                        _curPlayType.value = PlayType.Stop
+                        _timerCount.value = measureTime
+                    }
+                }
             }
         }
     }
 
-    fun setReplayViewType(viewType: ViewType) {
+    fun setViewType(viewType: ViewType) {
         _curViewType.value = viewType
     }
 
     fun applyTimeFormat(time: Double) {
         measureTime = (time * 10).toInt()
+    }
+
+    fun playTimer() {
+        _curPlayType.value = PlayType.Play
+    }
+
+    fun stopTimer() {
+        _curPlayType.value = PlayType.Stop
     }
 }

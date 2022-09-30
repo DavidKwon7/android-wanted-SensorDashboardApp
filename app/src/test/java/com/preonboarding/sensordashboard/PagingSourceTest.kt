@@ -58,7 +58,7 @@ class PagingSourceTest {
 
             val expectResult = PagingSource.LoadResult.Page(
                 data = data.mapToMeasureResult(),
-                prevKey = 0,
+                prevKey = null,
                 nextKey = 2
             )
             Assert.assertEquals(

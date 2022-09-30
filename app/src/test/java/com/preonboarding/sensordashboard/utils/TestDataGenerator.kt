@@ -8,10 +8,6 @@ class TestDataGenerator {
 
     companion object {
 
-        fun generateMeasurementEntity(): MeasurementEntity {
-            return MeasurementEntity(5, generateSensorInfoList(), "Accelerometer", "2022/09/29 04:49:36", 60.00003)
-        }
-
         fun generateSensorInfo(): SensorInfo {
             return SensorInfo(1,2,1)
         }

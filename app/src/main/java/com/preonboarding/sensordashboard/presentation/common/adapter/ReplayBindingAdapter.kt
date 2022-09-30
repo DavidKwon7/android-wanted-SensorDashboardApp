@@ -1,4 +1,4 @@
-package com.preonboarding.sensordashboard.presentation.common
+package com.preonboarding.sensordashboard.presentation.common.adapter
 
 import android.view.View
 import android.widget.ImageView

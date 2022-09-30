@@ -15,6 +15,7 @@ import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import okio.IOException
 import org.junit.Assert
 import org.junit.Before
@@ -46,19 +47,19 @@ class PagingSourceTest {
     }
 
     @Test
-    fun paging_source_load_success() =
-        mainCoroutineRule.runBlockingTest {
-            val data = TestDataGenerator.generateMeasureResultList()
+    fun load_PagingSource_Success() =
+        mainCoroutineRule.runTest {
+            val data = TestDataGenerator.generateMeasurementEntityList()
 
-            coEvery { measurementDAO.getAllMeasurement() } returns data
+            coEvery { measurementDAO.getAllMeasurement(any(), any()) } returns data
 
-            measurementDAO.getAllMeasurement()
+            measurementDAO.getAllMeasurement(1,1)
 
-            coVerify { measurementDAO.getAllMeasurement() }
+            coVerify { measurementDAO.getAllMeasurement(any(), any()) }
 
             val expectResult = PagingSource.LoadResult.Page(
                 data = data.mapToMeasureResult(),
-                prevKey = 0,
+                prevKey = null,
                 nextKey = 2
             )
             Assert.assertEquals(
@@ -73,11 +74,11 @@ class PagingSourceTest {
         }
 
     @Test
-    fun paging_source_load_failure_received_io_exception() =
-        mainCoroutineRule.runBlockingTest {
+    fun load_PagingSource_Failure_Received_IoException() =
+        mainCoroutineRule.runTest {
             val error = IOException("404", Throwable())
 
-            coEvery { measurementDAO.getAllMeasurement() } throws error
+            coEvery { measurementDAO.getAllMeasurement(any(), any()) } throws error
 
             val expectedResult = PagingSource.LoadResult.Error<Int, ClipData.Item>(error)
 
@@ -93,9 +94,9 @@ class PagingSourceTest {
         }
 
     @Test
-    fun paging_source_load_failure_received_null_exception() =
-        mainCoroutineRule.runBlockingTest {
-            coEvery { measurementDAO.getAllMeasurement() } throws NullPointerException()
+    fun load_PagingSource_Failure_Received_NullException() =
+        mainCoroutineRule.runTest {
+            coEvery { measurementDAO.getAllMeasurement(any(), any()) } throws NullPointerException()
 
             val expectedResult = PagingSource.LoadResult.Error<Int, ClipData.Item>(NullPointerException())
 

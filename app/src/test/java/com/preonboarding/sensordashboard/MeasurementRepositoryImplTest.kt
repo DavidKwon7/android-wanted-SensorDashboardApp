@@ -53,20 +53,20 @@ class MeasurementRepositoryImplTest {
     }
 
     @Test
-    fun test_get_data_success() = runTest {
+    fun get_MeasurementData_Success() = runTest {
         val data = TestDataGenerator.generateMeasurementEntityList()
 
-        coEvery { measurementDAO.getAllMeasurement() } returns data
+        coEvery { measurementDAO.getAllMeasurement(any(), any()) } returns data
 
-        val expectData = measurementDAO.getAllMeasurement()
+        val expectData = measurementDAO.getAllMeasurement(1,1)
 
-        coVerify { measurementDAO.getAllMeasurement() }
+        coVerify { measurementDAO.getAllMeasurement(any(), any()) }
 
         Assert.assertEquals(data, expectData)
     }
 
     @Test
-    fun test_save_measurement_success() = runTest {
+    fun save_MeasurementData_Success() = runTest {
         val saveItem = TestDataGenerator.generateSensorInfoList()
 
         coEvery { measurementDAO.saveMeasurement(any()) } returns Unit
@@ -79,7 +79,7 @@ class MeasurementRepositoryImplTest {
     }
 
     @Test(expected = Exception::class)
-    fun test_save_measurement_fail() = runTest {
+    fun save_MeasurementData_Fail() = runTest {
         val saveItem = TestDataGenerator.generateSensorInfoList()
 
         coEvery { measurementDAO.saveMeasurement(any()) } throws Exception()

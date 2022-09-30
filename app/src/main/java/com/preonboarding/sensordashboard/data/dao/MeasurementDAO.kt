@@ -1,9 +1,6 @@
 package com.preonboarding.sensordashboard.data.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.preonboarding.sensordashboard.data.entity.MeasurementEntity
 
 @Dao
@@ -14,4 +11,7 @@ interface MeasurementDAO {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun saveMeasurement(measurementEntity: MeasurementEntity)
+
+    @Query("DELETE FROM measurements WHERE id = :id")
+    suspend fun deleteMeasurementById(id: Int)
 }

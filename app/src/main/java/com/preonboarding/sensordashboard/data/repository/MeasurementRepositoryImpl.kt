@@ -46,4 +46,8 @@ class MeasurementRepositoryImpl @Inject constructor(
             )
         )
     }
+
+    override suspend fun deleteMeasurementById(id: Int) {
+        measurementDao.deleteMeasurementById(id)
+    }
 }

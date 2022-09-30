@@ -8,5 +8,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface MeasurementRepository {
     suspend fun getAllMeasurement(): Flow<PagingData<MeasureResult>>
-    suspend fun saveMeasurement(sensorList: List<SensorInfo>?, type: String, date: String, time: Double): Unit
+    suspend fun saveMeasurement(sensorList: List<SensorInfo>?, type: String, date: String, time: Double)
+    suspend fun deleteMeasurementById(id: Int)
 }

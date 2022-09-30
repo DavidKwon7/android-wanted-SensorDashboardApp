@@ -477,9 +477,9 @@ private fun String.createSet(chartColor: Int): ILineDataSet {
 
 #### 1. 주어진 시간 만큼 타이머 작동
 
-| timer |
-|:----:|
-|<img src="https://user-images.githubusercontent.com/110798031/193276742-9a7e9524-d26d-48b9-94bd-0665fa885e64.gif" width="180" height="400">|
+| 중간에 정지 | 끝까지 재생 |
+|:----:|:----:|
+|<img src="https://user-images.githubusercontent.com/110798031/193290266-ae92004d-b132-417c-9640-18e6f28f68fb.gif" width="180" height="400">|<img src="https://user-images.githubusercontent.com/110798031/193290242-2265a2f2-e0f2-4df6-b912-cfad7b251933.gif" width="180" height="400">|
 - `ReplayViewModel`
 - 정지했을 경우 0초부터 다시 시작
 - ui state에 따라 버튼 모양 변경 및 타이머 시작/정지  
@@ -539,7 +539,7 @@ class ReplayViewModel @Inject constructor (
 
 | view type | play type |
 |:----:|:----:|
-|<img src="https://user-images.githubusercontent.com/110798031/193276497-567f090d-b542-4e34-89db-1aae6f61ecd6.gif" width="180" height="400">|<img src="https://user-images.githubusercontent.com/110798031/193276295-d6c7a60c-c5d8-4a13-b96a-21c26b38c749.gif" width="180" height="400">|
+|<img src="https://user-images.githubusercontent.com/110798031/193290285-aa869198-7269-44b6-9845-d91dd0147ab4.gif" width="180" height="400">|<img src="https://user-images.githubusercontent.com/110798031/193290276-7e3e5b37-14f4-4fbe-af30-eff317d59fca.gif" width="180" height="400">|
 - `ReplayBindingAdapter`
 - xml에 바인딩하여 보여지는 컴포넌트 분기 처리
 

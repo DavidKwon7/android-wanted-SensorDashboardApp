@@ -3,10 +3,12 @@ package com.preonboarding.sensordashboard.presentation.dashboard
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.preonboarding.sensordashboard.R
 import com.preonboarding.sensordashboard.databinding.FragmentDashboardBinding
@@ -31,7 +33,12 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
                 showDialog(it)
             },
             itemClicked = {
-                navigateWithArgs(DashboardFragmentDirections.actionDashboardToReplay(it, ViewType.VIEW))
+                navigateWithArgs(
+                    DashboardFragmentDirections.actionDashboardToReplay(
+                        it,
+                        ViewType.VIEW
+                    )
+                )
             }
         )
     }
@@ -43,6 +50,7 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
         viewModel.getAllMeasurement()
         initRecyclerView()
         observeMeasureData()
+        observeLoadState()
     }
 
     private fun initRecyclerView() {
@@ -74,11 +82,27 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
         }
     }
 
+    private fun observeLoadState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                pagingAdapter.loadStateFlow.collect {
+                    Timber.e("${it.source.append}")
+                    binding.lpiPaging.isVisible = it.source.append is LoadState.Loading
+                }
+            }
+        }
+    }
+
     private fun showDialog(measureResult: MeasureResult) {
         val dialog = OptionDialog(
             requireContext(),
             playClicked = {
-                navigateWithArgs(DashboardFragmentDirections.actionDashboardToReplay(measureResult, ViewType.PLAY))
+                navigateWithArgs(
+                    DashboardFragmentDirections.actionDashboardToReplay(
+                        measureResult,
+                        ViewType.PLAY
+                    )
+                )
             },
             deleteClicked = {
                 Toast.makeText(requireContext(), "Delete", Toast.LENGTH_SHORT).show()

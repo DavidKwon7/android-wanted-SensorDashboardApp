@@ -6,7 +6,7 @@ import com.preonboarding.sensordashboard.data.entity.MeasurementEntity
 @Dao
 interface MeasurementDAO {
 
-    @Query("SELECT * from measurements LIMIT :loadSize OFFSET (:page - 1) * :loadSize")
+    @Query("SELECT * FROM measurements ORDER BY date DESC LIMIT :loadSize OFFSET (:page - 1) * :loadSize")
     suspend fun getAllMeasurement(page: Int, loadSize: Int): List<MeasurementEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

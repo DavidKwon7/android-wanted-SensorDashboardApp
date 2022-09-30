@@ -7,6 +7,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavArgs
 import androidx.navigation.fragment.navArgs
 import com.github.mikephil.charting.data.Entry
@@ -19,9 +20,7 @@ import com.preonboarding.sensordashboard.domain.model.ViewType
 import com.preonboarding.sensordashboard.presentation.common.base.BaseFragment
 import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil.navigateUp
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -30,6 +29,8 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
     private val viewModel: ReplayViewModel by activityViewModels()
     private val args: ReplayFragmentArgs by navArgs()
     var sensorInfoList: ArrayList<SensorInfo> = arrayListOf()
+    private lateinit var timerJob : Job
+
 
     /**
      * @author 이재성
@@ -39,6 +40,8 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
         super.onViewCreated(view, savedInstanceState)
 
         registerObserver()
+
+
         initViews()
 
 
@@ -83,9 +86,34 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
             viewChart(args.measureResult.measureInfo)
         }
         else {
+            startTimer()
+        }
+    }
+
+    fun startTimer() {
+        if(::timerJob.isInitialized) {
+            timerJob.cancel()
+        }
+        var realTime = args.measureResult.measureTime
+        var i = 0
+        timerJob = lifecycleScope.launch {
+            while (realTime > 0) {
+                sensorInfoList.add(args.measureResult.measureInfo[i])
+                viewChart(sensorInfoList)
+                realTime-=0.1
+                i++
+                delay(100L)
+            }
 
         }
     }
+
+    private fun stopTimer() {
+        if (::timerJob.isInitialized) {
+            timerJob.cancel()
+        }
+    }
+
 
     private fun viewChart(InfoList:List<SensorInfo>) {
         val entriesX = ArrayList<Entry>()

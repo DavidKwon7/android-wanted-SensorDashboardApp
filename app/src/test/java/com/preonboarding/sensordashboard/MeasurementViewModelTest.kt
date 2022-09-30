@@ -52,21 +52,6 @@ class MeasurementViewModelTest {
         )
     }
 
-    // sample
-    @Test
-    fun testSample() {
-        runBlocking {
-            flow {
-                emit("test")
-                emit("test")
-            }.test {
-                assertThat(expectItem()).isEqualTo("test")
-                assertThat(expectItem()).isEqualTo("test")
-                expectComplete()
-            }
-        }
-    }
-
     @Test
     fun save_MeasurementData_Fail() = runTest {
 
@@ -78,7 +63,6 @@ class MeasurementViewModelTest {
 
     }
 
-    // todo 수정 필요
     @Test
     fun save_MeasurementData_Success() = runTest {
 

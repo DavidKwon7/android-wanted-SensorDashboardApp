@@ -15,6 +15,7 @@ import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import okio.IOException
 import org.junit.Assert
 import org.junit.Before
@@ -47,7 +48,7 @@ class PagingSourceTest {
 
     @Test
     fun load_PagingSource_Success() =
-        mainCoroutineRule.runBlockingTest {
+        mainCoroutineRule.runTest {
             val data = TestDataGenerator.generateMeasurementEntityList()
 
             coEvery { measurementDAO.getAllMeasurement(any(), any()) } returns data
@@ -74,7 +75,7 @@ class PagingSourceTest {
 
     @Test
     fun load_PagingSource_Failure_Received_IoException() =
-        mainCoroutineRule.runBlockingTest {
+        mainCoroutineRule.runTest {
             val error = IOException("404", Throwable())
 
             coEvery { measurementDAO.getAllMeasurement(any(), any()) } throws error
@@ -92,10 +93,9 @@ class PagingSourceTest {
             )
         }
 
-
     @Test
     fun load_PagingSource_Failure_Received_NullException() =
-        mainCoroutineRule.runBlockingTest {
+        mainCoroutineRule.runTest {
             coEvery { measurementDAO.getAllMeasurement(any(), any()) } throws NullPointerException()
 
             val expectedResult = PagingSource.LoadResult.Error<Int, ClipData.Item>(NullPointerException())

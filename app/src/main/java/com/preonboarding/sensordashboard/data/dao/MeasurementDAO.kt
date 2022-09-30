@@ -9,8 +9,8 @@ import com.preonboarding.sensordashboard.data.entity.MeasurementEntity
 @Dao
 interface MeasurementDAO {
 
-    @Query("SELECT * from MEASUREMENTS")
-    suspend fun getAllMeasurement(): List<MeasurementEntity>
+    @Query("SELECT * from measurements LIMIT :loadSize OFFSET (:page - 1) * :loadSize")
+    suspend fun getAllMeasurement(page: Int, loadSize: Int): List<MeasurementEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun saveMeasurement(measurementEntity: MeasurementEntity)

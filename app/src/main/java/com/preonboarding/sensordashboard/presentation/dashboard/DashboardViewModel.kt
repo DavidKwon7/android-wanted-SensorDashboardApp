@@ -4,11 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.preonboarding.sensordashboard.di.IoDispatcher
 import com.preonboarding.sensordashboard.domain.model.MeasureResult
-import com.preonboarding.sensordashboard.domain.repository.MeasurementRepository
+import com.preonboarding.sensordashboard.domain.usecase.GetAllMeasurementUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,20 +17,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    private val measurementRepository: MeasurementRepository,
-    @IoDispatcher private val dispatcher: CoroutineDispatcher
+    private val getAllMeasurementUseCase: GetAllMeasurementUseCase
 ) : ViewModel() {
 
     // 전체 측정 데이터
     private val _measureData: MutableStateFlow<PagingData<MeasureResult>> =
-        MutableStateFlow<PagingData<MeasureResult>>(PagingData.empty())
+        MutableStateFlow(PagingData.empty())
     val measureData: StateFlow<PagingData<MeasureResult>> = _measureData.asStateFlow()
 
 
     fun getAllMeasurement() {
-        Timber.e("START")
-        viewModelScope.launch(dispatcher) {
-            measurementRepository.getAllMeasurement()
+        viewModelScope.launch {
+            getAllMeasurementUseCase.invoke()
                 .cachedIn(viewModelScope)
                 .collectLatest { measureList ->
                     _measureData.emit(measureList)

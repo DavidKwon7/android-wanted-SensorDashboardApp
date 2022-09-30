@@ -10,6 +10,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.preonboarding.sensordashboard.R
 import com.preonboarding.sensordashboard.databinding.FragmentDashboardBinding
+import com.preonboarding.sensordashboard.domain.model.MeasureResult
 import com.preonboarding.sensordashboard.domain.model.ViewType
 import com.preonboarding.sensordashboard.presentation.common.OptionDialog
 import com.preonboarding.sensordashboard.presentation.common.base.BaseFragment
@@ -27,7 +28,7 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
     private val pagingAdapter: DashboardPagingAdapter by lazy {
         DashboardPagingAdapter(
             optionClicked = {
-                showDialog()
+                showDialog(it)
             },
             itemClicked = {
                 navigateWithArgs(DashboardFragmentDirections.actionDashboardToReplay(it, ViewType.VIEW))
@@ -73,10 +74,12 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
         }
     }
 
-    private fun showDialog() {
+    private fun showDialog(measureResult: MeasureResult) {
         val dialog = OptionDialog(
             requireContext(),
-            playClicked = { navigate(R.id.action_dashboard_to_replay) },
+            playClicked = {
+                navigateWithArgs(DashboardFragmentDirections.actionDashboardToReplay(measureResult, ViewType.REPLAY))
+            },
             deleteClicked = {
                 Toast.makeText(requireContext(), "Delete", Toast.LENGTH_SHORT).show()
             })

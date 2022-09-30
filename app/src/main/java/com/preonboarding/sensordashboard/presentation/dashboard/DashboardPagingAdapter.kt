@@ -9,7 +9,7 @@ import com.preonboarding.sensordashboard.databinding.ItemSensorResultBinding
 import com.preonboarding.sensordashboard.domain.model.MeasureResult
 
 class DashboardPagingAdapter(
-    private val optionClicked: () -> Unit,
+    private val optionClicked: (MeasureResult) -> Unit,
     private val itemClicked: (MeasureResult) -> Unit
 ) : PagingDataAdapter<MeasureResult, DashboardPagingAdapter.DashboardViewHolder>(
         DASHBOARD_DIFF_CALLBACK
@@ -32,13 +32,13 @@ class DashboardPagingAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bindItems(
             item: MeasureResult,
-            optionClicked: () -> Unit,
+            optionClicked: (MeasureResult) -> Unit,
             itemClicked: (MeasureResult) -> Unit
         ) = with(binding) {
             measureResult = item
 
             ivOption.setOnClickListener {
-                optionClicked.invoke()
+                optionClicked.invoke(item)
             }
 
             clMeasureContainer.setOnClickListener {

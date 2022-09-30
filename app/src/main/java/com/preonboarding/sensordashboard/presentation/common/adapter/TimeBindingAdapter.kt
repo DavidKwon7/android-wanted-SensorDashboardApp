@@ -5,5 +5,5 @@ import androidx.databinding.BindingAdapter
 
 @BindingAdapter("bindTime")
 fun TextView.bindTime(time: Double) {
-    this.text = String.format("%.1d", time)
+    this.text = String.format("%.1f", time)
 }

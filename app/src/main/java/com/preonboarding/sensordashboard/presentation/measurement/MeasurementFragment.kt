@@ -26,7 +26,6 @@ import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @AndroidEntryPoint
 class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fragment_measurement),
@@ -157,7 +156,6 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
                     setMeasureTarget(MeasureTarget.ACC)
                 }
             }
-            Timber.tag(TAG).e("현재 측정 타겟 : ${curMeasureTarget.value}")
         }
     }
 
@@ -178,7 +176,6 @@ class MeasurementFragment : BaseFragment<FragmentMeasurementBinding>(R.layout.fr
         }
 
         // update second & value
-        Timber.tag(TAG).d("${viewModel.curMeasureTarget.value.type} : $sensorInfo")
         viewModel.updateMeasurement(sensorInfo)
 
         // chart update

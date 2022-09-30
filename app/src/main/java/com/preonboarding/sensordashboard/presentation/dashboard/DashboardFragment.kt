@@ -78,7 +78,7 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
         val dialog = OptionDialog(
             requireContext(),
             playClicked = {
-                navigateWithArgs(DashboardFragmentDirections.actionDashboardToReplay(measureResult, ViewType.REPLAY))
+                navigateWithArgs(DashboardFragmentDirections.actionDashboardToReplay(measureResult, ViewType.PLAY))
             },
             deleteClicked = {
                 Toast.makeText(requireContext(), "Delete", Toast.LENGTH_SHORT).show()

@@ -3,7 +3,6 @@ package com.preonboarding.sensordashboard.presentation.replay
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -14,6 +13,7 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.preonboarding.sensordashboard.R
 import com.preonboarding.sensordashboard.databinding.FragmentReplayBinding
+import com.preonboarding.sensordashboard.domain.model.PlayType
 import com.preonboarding.sensordashboard.domain.model.SensorInfo
 import com.preonboarding.sensordashboard.domain.model.ViewType
 import com.preonboarding.sensordashboard.presentation.common.base.BaseFragment
@@ -22,7 +22,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @AndroidEntryPoint
 class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_replay) {
@@ -45,9 +44,8 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
         initViews()
 
         binding.measureResult = args.measureResult
-        viewModel.setReplayViewType(args.viewType)
+        viewModel.setViewType(args.viewType)
         viewModel.applyTimeFormat(args.measureResult.measureTime)
-
     }
 
     private fun registerObserver() {
@@ -65,6 +63,7 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.curPlayType.collect {
                     binding.playType = it
+                    startAndStopDrawing(it)
                 }
             }
         }
@@ -82,40 +81,50 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
         binding.tbReplay.setNavigationOnClickListener {
             navigateUp()
         }
-        if (args.viewType == ViewType.VIEW) {
-            viewChart(args.measureResult.measureInfo)
-        } else {
-
-            startDrawing()
-        }
-    }
-
-    fun startDrawing() {
-        if (::timerJob.isInitialized) {
-            timerJob.cancel()
-        }
-        var realTime = args.measureResult.measureTime
-        var i = 0
-        timerJob = lifecycleScope.launch {
-            while (realTime > 0) {
-                sensorInfoList.add(args.measureResult.measureInfo[i])
-                viewChart(sensorInfoList)
-                realTime -= 0.1
-                i++
-                delay(100L)
+        when (args.viewType) {
+            ViewType.VIEW -> {
+                drawChart(args.measureResult.measureInfo)
             }
-
+            ViewType.PLAY -> {
+                drawChart(listOf())
+            }
+            else -> {}
         }
     }
 
-    private fun stopDrawing() {
-        if (::timerJob.isInitialized) {
-            timerJob.cancel()
+    private fun startAndStopDrawing(playType: PlayType) {
+        when (playType) {
+            is PlayType.Play -> {
+                sensorInfoList.clear()
+                binding.replayLineChart.apply {
+                    notifyDataSetChanged()
+                    invalidate()
+                }
+
+                if (::timerJob.isInitialized) {
+                    timerJob.cancel()
+                }
+
+                val realTime = args.measureResult.measureTime * 10
+                var timer = 0
+                timerJob = lifecycleScope.launch {
+                    while (timer < realTime) {
+                        sensorInfoList.add(args.measureResult.measureInfo[timer])
+                        drawChart(sensorInfoList)
+                        timer += 1
+                        delay(100L)
+                    }
+                }
+            }
+            is PlayType.Stop -> {
+                if (::timerJob.isInitialized) {
+                    timerJob.cancel()
+                }
+            }
         }
     }
 
-
-    private fun viewChart(InfoList: List<SensorInfo>) {
+    private fun drawChart(InfoList: List<SensorInfo>) {
         val entriesX = ArrayList<Entry>()
         val entriesY = ArrayList<Entry>()
         val entriesZ = ArrayList<Entry>()
@@ -158,5 +167,4 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
             invalidate()
         }
     }
-
 }

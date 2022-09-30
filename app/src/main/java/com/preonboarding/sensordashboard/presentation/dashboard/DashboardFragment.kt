@@ -66,7 +66,7 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
     }
 
     private fun bindViews() = with(binding) {
-        btnMeasurement.setOnClickListener {
+        fabMeasure.setOnClickListener {
             navigate(R.id.action_dashboard_to_measurement)
         }
     }
@@ -105,9 +105,24 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
                 )
             },
             deleteClicked = {
-                Toast.makeText(requireContext(), "Delete", Toast.LENGTH_SHORT).show()
+                viewModel.deleteMeasurementById(measureResult.id)
+                updateMeasureResult()
             })
 
         dialog.showDialog()
+    }
+
+    private fun updateMeasureResult() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                kotlin.runCatching {
+                    viewModel.getAllMeasurement()
+                }.onSuccess {
+                    viewModel.measureData.collectLatest {
+                        pagingAdapter.submitData(it)
+                    }
+                }
+            }
+        }
     }
 }

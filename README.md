@@ -617,8 +617,9 @@ fun changeTimerVisibility(view: TextView, playType: PlayType?, viewType: ViewTyp
 
 ```kotlin
 @ExperimentalCoroutinesApi
+
 class MainCoroutineRule(
-    val dispatcher: CoroutineDispatcher = TestCoroutineDispatcher()
+    val dispatcher: CoroutineDispatcher = UnconfinedTestDispatcher()
 ) : TestWatcher(), TestCoroutineScope by TestCoroutineScope(dispatcher){
 
     override fun starting(description: Description?) {
@@ -634,7 +635,7 @@ class MainCoroutineRule(
 }
 ```
 
-2. 테스트 환경 
+2. 테스트 환경 세팅
 
 ```kotlin
 @get:Rule
@@ -655,28 +656,28 @@ fun setUp() {
 }
 ```
 
-3. 테스트 
+3. 테스트 진행
 
 ```kotlin
-@Test
-fun paging_source_load_failure_received_io_exception() =
-    mainCoroutineRule.runBlockingTest{
-val error = IOException("404", Throwable())
+    @Test
+    fun load_PagingSource_Failure_Received_IoException() =
+        mainCoroutineRule.runTest {
+            val error = IOException("404", Throwable())
 
-coEvery{measurementDAO.getAllMeasurement()} throws error
+            coEvery { measurementDAO.getAllMeasurement(any(), any()) } throws error
 
-        val expectedResult = PagingSource.LoadResult.Error<Int, ClipData.Item>(error)
+            val expectedResult = PagingSource.LoadResult.Error<Int, ClipData.Item>(error)
 
-        Assert.assertEquals(
-            expectedResult, measurementPagingSource.load(
-                PagingSource.LoadParams.Refresh(
-                    key = 0,
-                    loadSize = 1,
-                    placeholdersEnabled = false
+            Assert.assertEquals(
+                expectedResult, measurementPagingSource.load(
+                    PagingSource.LoadParams.Refresh(
+                        key = 0,
+                        loadSize = 1,
+                        placeholdersEnabled = false
+                    )
                 )
             )
-        )
-}
+        }
 ```
 
 ---

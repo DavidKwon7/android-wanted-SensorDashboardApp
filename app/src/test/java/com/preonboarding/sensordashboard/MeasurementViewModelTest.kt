@@ -68,7 +68,7 @@ class MeasurementViewModelTest {
     }
 
     @Test
-    fun sensor_fail() = runTest {
+    fun save_MeasurementData_Fail() = runTest {
 
         coEvery { saveMeasurementUseCase.invoke(any(), any(), any(), any()) } throws Exception()
 
@@ -80,7 +80,7 @@ class MeasurementViewModelTest {
 
     // todo 수정 필요
     @Test
-    fun sensor_success() = runTest {
+    fun save_MeasurementData_Success() = runTest {
 
         val data = TestDataGenerator.generateSensorInfo()
 

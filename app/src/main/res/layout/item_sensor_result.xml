@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="measureResult"
             type="com.preonboarding.sensordashboard.domain.model.MeasureResult" />
@@ -32,6 +33,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:minWidth="150dp"
             android:text="@{measureResult.measureType}"
             android:textColor="@color/black"
             android:textSize="22sp"
@@ -46,7 +48,9 @@
             android:layout_height="0dp"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
+            android:ellipsize="end"
             android:gravity="center"
+            android:maxLines="1"
             android:text="@{String.valueOf(measureResult.measureTime)}"
             android:textColor="@color/black"
             android:textSize="28sp"
@@ -55,7 +59,7 @@
             app:layout_constraintStart_toEndOf="@id/tv_measure_type"
             app:layout_constraintTop_toTopOf="@id/tv_date"
             app:layout_goneMarginStart="8dp"
-            tools:text="43.4" />
+            tools:text="22.500000000000000" />
 
         <ImageView
             android:id="@+id/iv_option"

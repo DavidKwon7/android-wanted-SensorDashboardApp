@@ -2,7 +2,6 @@ package com.preonboarding.sensordashboard.presentation.dashboard
 
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.activityViewModels
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -11,11 +10,11 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.preonboarding.sensordashboard.R
 import com.preonboarding.sensordashboard.databinding.FragmentDashboardBinding
-import com.preonboarding.sensordashboard.presentation.common.OptionDialog
 import com.preonboarding.sensordashboard.domain.model.ViewType
+import com.preonboarding.sensordashboard.presentation.common.OptionDialog
 import com.preonboarding.sensordashboard.presentation.common.base.BaseFragment
 import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil.navigate
-import com.preonboarding.sensordashboard.presentation.replay.ReplayViewModel
+import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil.navigateWithArgs
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -31,11 +30,10 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
                 showDialog()
             },
             itemClicked = {
-                navigate(R.id.action_dashboard_to_replay)
+                navigateWithArgs(DashboardFragmentDirections.actionDashboardToReplay(it, ViewType.VIEW))
             }
         )
     }
-    private val replayViewModel: ReplayViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -62,11 +60,6 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
         btnMeasurement.setOnClickListener {
             navigate(R.id.action_dashboard_to_measurement)
         }
-
-        btnReplay.setOnClickListener {
-            navigate(R.id.action_dashboard_to_replay)
-            replayViewModel.setReplayViewType(ViewType.REPLAY)
-        }
     }
 
     private fun observeMeasureData() {
@@ -83,13 +76,10 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
     private fun showDialog() {
         val dialog = OptionDialog(
             requireContext(),
-            playClicked = {
-                navigate(R.id.action_dashboard_to_replay)
-            },
+            playClicked = { navigate(R.id.action_dashboard_to_replay) },
             deleteClicked = {
                 Toast.makeText(requireContext(), "Delete", Toast.LENGTH_SHORT).show()
-            }
-        )
+            })
 
         dialog.showDialog()
     }

@@ -26,5 +26,15 @@
         android:id="@+id/navigation_replay"
         android:name="com.preonboarding.sensordashboard.presentation.replay.ReplayFragment"
         android:label="ReplayFragment"
-        tools:layout="@layout/fragment_replay" />
+        tools:layout="@layout/fragment_replay">
+        <argument
+            android:name="measureResult"
+            app:argType="com.preonboarding.sensordashboard.domain.model.MeasureResult"
+            app:nullable="false" />
+        <argument
+            android:name="viewType"
+            app:argType="com.preonboarding.sensordashboard.domain.model.ViewType"
+            app:nullable="false" />
+
+    </fragment>
 </navigation>

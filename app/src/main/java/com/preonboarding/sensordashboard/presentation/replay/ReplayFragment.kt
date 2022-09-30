@@ -7,8 +7,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavArgs
 import androidx.navigation.fragment.navArgs
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -20,7 +18,9 @@ import com.preonboarding.sensordashboard.domain.model.ViewType
 import com.preonboarding.sensordashboard.presentation.common.base.BaseFragment
 import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil.navigateUp
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -29,7 +29,7 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
     private val viewModel: ReplayViewModel by activityViewModels()
     private val args: ReplayFragmentArgs by navArgs()
     var sensorInfoList: ArrayList<SensorInfo> = arrayListOf()
-    private lateinit var timerJob : Job
+    private lateinit var timerJob: Job
 
 
     /**
@@ -82,16 +82,15 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
         binding.tbReplay.setNavigationOnClickListener {
             navigateUp()
         }
-        if(args.viewType==ViewType.VIEW){
+        if (args.viewType == ViewType.VIEW) {
             viewChart(args.measureResult.measureInfo)
-        }
-        else {
+        } else {
             startTimer()
         }
     }
 
     fun startTimer() {
-        if(::timerJob.isInitialized) {
+        if (::timerJob.isInitialized) {
             timerJob.cancel()
         }
         var realTime = args.measureResult.measureTime
@@ -100,7 +99,7 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
             while (realTime > 0) {
                 sensorInfoList.add(args.measureResult.measureInfo[i])
                 viewChart(sensorInfoList)
-                realTime-=0.1
+                realTime -= 0.1
                 i++
                 delay(100L)
             }
@@ -115,7 +114,7 @@ class ReplayFragment : BaseFragment<FragmentReplayBinding>(R.layout.fragment_rep
     }
 
 
-    private fun viewChart(InfoList:List<SensorInfo>) {
+    private fun viewChart(InfoList: List<SensorInfo>) {
         val entriesX = ArrayList<Entry>()
         val entriesY = ArrayList<Entry>()
         val entriesZ = ArrayList<Entry>()

@@ -45,6 +45,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:background="@drawable/bg_measurement_target_box"
             android:layout_marginTop="30dp"
             android:layout_marginHorizontal="@dimen/margin_background_default"
             app:layout_constraintStart_toStartOf="parent"
@@ -58,9 +59,13 @@
                 android:gravity="center"
                 android:textColor="@color/black"
                 android:text="@string/measure_acc_text"
-                android:paddingVertical="6dp"
+                android:paddingVertical="8dp"
                 android:onClick="@{() -> fragment.changeMeasureTarget()}"
                 android:background="@{measureTarget == MeasureTarget.ACC ? @color/blue_200 : @color/white}"/>
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/grey_100" />
             <TextView
                 android:id="@+id/tv_measure_gyro"
                 android:layout_width="0dp"
@@ -69,7 +74,7 @@
                 android:gravity="center"
                 android:textColor="@color/black"
                 android:text="@string/measure_gyro_text"
-                android:paddingVertical="6dp"
+                android:paddingVertical="8dp"
                 android:onClick="@{() -> fragment.changeMeasureTarget()}"
                 android:background="@{measureTarget == MeasureTarget.GYRO ? @color/blue_200 : @color/white}"/>
         </LinearLayout>
@@ -78,6 +83,7 @@
             android:id="@+id/measurement_line_chart"
             android:layout_width="match_parent"
             android:layout_height="300dp"
+            android:background="@drawable/bg_measurement_target_box"
             android:layout_marginTop="30dp"
             android:layout_marginHorizontal="@dimen/margin_background_default"
             app:layout_constraintTop_toBottomOf="@id/layout_measure_type"
@@ -89,10 +95,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/black"
+            android:textSize="18sp"
             android:text="@{String.valueOf(viewModel.curSecond)}"
             android:layout_marginTop="30dp"
             android:layout_marginStart="@dimen/margin_background_default"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/measurement_line_chart" />
 
         <Button

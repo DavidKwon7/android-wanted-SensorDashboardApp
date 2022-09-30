@@ -475,63 +475,136 @@ private fun String.createSet(chartColor: Int): ILineDataSet {
 
 ### 4. 재생 하기
 
-- 측정 시간을 받아서 해당 시간 만큼 초 세기
+#### 1. 주어진 시간 만큼 타이머 작동
+
+| timer |
+|:----:|
+|<img src="https://user-images.githubusercontent.com/110798031/193276742-9a7e9524-d26d-48b9-94bd-0665fa885e64.gif" width="180" height="400">|
+- `ReplayViewModel`
 - 정지했을 경우 0초부터 다시 시작
+- ui state에 따라 버튼 모양 변경 및 타이머 시작/정지  
 
 ```kotlin
-class ReplayViewModel: ViewModel() {
+@HiltViewModel
+class ReplayViewModel @Inject constructor (
+): ViewModel() {
 
-    private val _timerCount = MutableLiveData<Double>()
-    private lateinit var a : Job
+    var measureTime = 0
 
-    val timerCount : LiveData<Double>
-        get() = _timerCount
+    private lateinit var timerJob : Job
 
-    // 받은 시간 정보(임시)
-    private val _getTime = 10.5
-    var getTime = _getTime
-
-    fun timerStart() {
-        if(::a.isInitialized) {
-            a.cancel()
+    private fun startTimer() {
+        if(::timerJob.isInitialized) {
+            timerJob.cancel()
         }
 
-        _timerCount.value = 0.0
-        a = viewModelScope.launch {
-            while (getTime > 0) {
-                getTime -= 0.1
-                _timerCount.value = timerCount.value?.plus(0.1)
+        _timerCount.value = 0
+        timerJob = viewModelScope.launch {
+            while (timerCount.value < measureTime) {
+                _timerCount.value = timerCount.value + 1
                 delay(100L)
             }
 
-            getTime = _getTime
-
+            changeTimerStatus()
+            _timerCount.value = measureTime
         }
     }
 
-    fun timerStop() {
-        if (::a.isInitialized) {
-            a.cancel()
+    private fun stopTimer() {
+        if (::timerJob.isInitialized) {
+            timerJob.cancel()
         }
     }
 
+    fun changeTimerStatus() {
+        when (curPlayType.value) {
+            PlayType.Stop -> {
+                _curPlayType.value = PlayType.Play
+                startTimer()
+            }
+            PlayType.Play -> {
+                _curPlayType.value = PlayType.Stop
+                stopTimer()
+            }
+        }
+    }
+
+    fun applyTimeFormat(time: Double) {
+        measureTime = (time * 10).toInt()
+    }
 }
 ```
 
-- 버튼을 누를 때마다 타이머 실행 및 중지
+#### 2. ViewType에 따른 ui 상태 관리
+
+| view type | play type |
+|:----:|:----:|
+|<img src="https://user-images.githubusercontent.com/110798031/193276497-567f090d-b542-4e34-89db-1aae6f61ecd6.gif" width="180" height="400">|<img src="https://user-images.githubusercontent.com/110798031/193276295-d6c7a60c-c5d8-4a13-b96a-21c26b38c749.gif" width="180" height="400">|
+- `ReplayBindingAdapter`
+- xml에 바인딩하여 보여지는 컴포넌트 분기 처리
 
 ```kotlin
-private fun changeBtnState() {
-    if(play) {
-        binding.btnPlayStop.isSelected = true
-        play = !play
-        //TODO: 그래프 실행
-        viewModel.timerStart()
-    } else {
-        binding.btnPlayStop.isSelected = false
-        play = !play
-        //TODO: 그래프 중지
-        viewModel.timerStop()
+@BindingAdapter("stopVisibilityPlayType", "stopVisibilityViewType")
+fun changeStopVisibility(view: ImageView, playType: PlayType?, viewType: ViewType?) {
+    if (viewType == null || playType == null) return
+    when (viewType) {
+        ViewType.PLAY -> {
+            when (playType) {
+                is PlayType.Stop -> {
+                    view.visibility = View.VISIBLE
+                }
+                is PlayType.Play -> {
+                    view.visibility = View.GONE
+                }
+            }
+        }
+        ViewType.VIEW -> {
+            view.visibility = View.GONE
+        }
+        ViewType.INITIAL -> {
+            // Error Status, when initial status, users cannot enter replay fragment
+        }
+    }
+}
+
+@BindingAdapter("playVisibilityPlayType", "playVisibilityViewType")
+fun changePlayVisibility(view: ImageView, playType: PlayType?, viewType: ViewType?) {
+    if (viewType == null || playType == null) return
+
+    when (viewType) {
+        ViewType.PLAY -> {
+            when (playType) {
+                is PlayType.Stop -> {
+                    view.visibility = View.GONE
+                }
+                is PlayType.Play -> {
+                    view.visibility = View.VISIBLE
+                }
+            }
+        }
+        ViewType.VIEW -> {
+            view.visibility = View.GONE
+        }
+        ViewType.INITIAL -> {
+            // Error Status, when initial status, users cannot enter replay fragment
+        }
+    }
+}
+
+@BindingAdapter("timerVisibilityPlayType", "timerVisibilityViewType")
+fun changeTimerVisibility(view: TextView, playType: PlayType?, viewType: ViewType?) {
+    if (viewType == null || playType == null) return
+
+    when (viewType) {
+        ViewType.PLAY -> {
+            view.visibility = View.VISIBLE
+        }
+        ViewType.VIEW -> {
+            view.visibility = View.GONE
+        }
+        ViewType.INITIAL -> {
+            // Error Status, when initial status, users cannot enter replay fragment
+        }
     }
 }
 ```

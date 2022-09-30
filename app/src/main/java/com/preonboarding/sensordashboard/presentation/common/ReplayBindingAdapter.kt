@@ -65,14 +65,7 @@ fun changeTimerVisibility(view: TextView, playType: PlayType?, viewType: ViewTyp
 
     when (viewType) {
         ViewType.PLAY -> {
-            when (playType) {
-                is PlayType.Stop -> {
-                    view.visibility = View.GONE
-                }
-                is PlayType.Play -> {
-                    view.visibility = View.VISIBLE
-                }
-            }
+            view.visibility = View.VISIBLE
         }
         ViewType.VIEW -> {
             view.visibility = View.GONE

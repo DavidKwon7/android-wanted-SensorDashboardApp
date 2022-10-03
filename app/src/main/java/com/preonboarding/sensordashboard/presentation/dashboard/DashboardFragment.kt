@@ -21,6 +21,7 @@ import com.preonboarding.sensordashboard.presentation.common.util.NavigationUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @AndroidEntryPoint
 class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragment_dashboard) {
@@ -65,7 +66,12 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(R.layout.fragme
         pagingAdapter.registerAdapterDataObserver(object: RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                 super.onItemRangeInserted(positionStart, itemCount)
-                binding.rvDashboard.scrollToPosition(0)
+                Timber.e("$positionStart // $itemCount")
+
+                if (positionStart == 0 && itemCount == 1) {
+                    binding.rvDashboard.smoothScrollToPosition(0)
+                }
+
             }
         })
     }

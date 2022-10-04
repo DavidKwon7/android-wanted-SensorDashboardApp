@@ -1,6 +1,7 @@
 package com.preonboarding.sensordashboard
 
 import android.arch.core.executor.testing.InstantTaskExecutorRule
+import com.preonboarding.sensordashboard.domain.usecase.DeleteMeasurementUseCase
 import com.preonboarding.sensordashboard.domain.usecase.GetAllMeasurementUseCase
 import com.preonboarding.sensordashboard.presentation.dashboard.DashboardViewModel
 import com.preonboarding.sensordashboard.utils.MainCoroutineRule
@@ -31,13 +32,17 @@ class DashboardViewModelTest {
     @MockK
     private lateinit var getAllMeasurementUseCase: GetAllMeasurementUseCase
 
+    @MockK
+    private lateinit var deleteMeasurementUseCase: DeleteMeasurementUseCase
+
     private lateinit var dashboardViewModel: DashboardViewModel
 
     @Before
     fun setUp() {
         MockKAnnotations.init(this, relaxUnitFun = true)
         dashboardViewModel = DashboardViewModel(
-            getAllMeasurementUseCase = getAllMeasurementUseCase
+            getAllMeasurementUseCase = getAllMeasurementUseCase,
+            deleteMeasurementUseCase = deleteMeasurementUseCase
         )
     }
 
